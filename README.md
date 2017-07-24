@@ -3,7 +3,7 @@ This document covers the Iris JavaScript SDK's React Component.
 
 ## Getting started
 
-`$ npm install iris-react-js --save`
+`$ npm install iris-react-sdk --save`
 
 ## Usage - Examples
 
@@ -66,7 +66,7 @@ import {IrisRoomContainer, IrisRtcSdk} from 'iris-react-sdk';
 **Example**
 
 ```js
-import IrisRtcSdk from 'iris-react-js';
+import IrisRtcSdk from 'iris-react-sdk';
 IrisRtcSdk.connect(irisToken, routingId, serverUrl);
 ```
 **Params**
@@ -84,7 +84,7 @@ IrisRtcSdk.connect(irisToken, routingId, serverUrl);
 **Example**
 
 ```js
-import IrisRtcSdk from 'iris-react-js';
+import IrisRtcSdk from 'iris-react-sdk';
 IrisRtcSdk.disconnect();
 ```
 **Params**
