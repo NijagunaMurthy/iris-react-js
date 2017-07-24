@@ -42,6 +42,11 @@ if (IrisRtcConnection) {
             }
         }
     }
+
+    IrisRtcSdk.disconnect = function(){
+      irisRtcConnection.close();
+    }
+
 }
 
 if(IrisRtcConfig){
@@ -91,8 +96,6 @@ class IrisRoomContainer extends Component {
         this.irisRtcSession.onEvent = this._onEvent.bind(this);
         this.irisRtcSession.onDominantSpeakerChanged = this._onDominantSpeakerChanged.bind(this);
 
-        // this.irisRtcSession.sendChatMessage = this.props.sendChatMessage.bind(this);
-
     };
 
     componentDidMount() {
@@ -104,7 +107,6 @@ class IrisRoomContainer extends Component {
         if (this.props.Config) {
             IrisRtcConfig.updateConfig(this.props.Config);
         }
-
 
         if (this.props.RoomId != null) {
             if (this.props.Type === 'video') {
@@ -119,11 +121,7 @@ class IrisRoomContainer extends Component {
             }
         }
 
-        // console.log(" IrisRoomContainer::componentWillReceiveProps ");
         this.syncMessages();
-
-        // Create a chat session if the type is chat
-        // this.TryAndCreateChatSession(this.props.Type, this.props.RoomId);
     }
 
     // Called when there is a change in props
@@ -174,7 +172,11 @@ class IrisRoomContainer extends Component {
                 let config = nextProps.Config;
                 config.roomId = nextProps.RoomId;
                 config.type = nextProps.Type;
-                this.irisRtcSession.createChatSession(config, irisRtcConnection);
+                if(nextProps.NotificationPayload){
+                  this.irisRtcSession.joinChatSession(config, irisRtcConnection, nextProps.NotificationPayload)
+                }else{
+                  this.irisRtcSession.createChatSession(config, irisRtcConnection);
+                }
             }
         }else if ((this.props.Type != nextProps.Type) || (this.props.RoomId != nextProps.RoomId)) {
             if ((this.props.Type == 'chat') && (this.props.RoomId != "")) {
@@ -218,12 +220,14 @@ class IrisRoomContainer extends Component {
 
         this.props.onLocalStream(stream);
 
-        if (this.props.Config.anonymous) {
-            // Create new session
-            let config = this.props.Config;
-            config.roomId = this.props.RoomId;
-            config.type = this.props.Type;
-            this.irisRtcSession.createSession(config, irisRtcConnection, stream);
+        // Create new session
+        let config = this.props.Config;
+        config.roomId = this.props.RoomId;
+        config.type = this.props.Type;
+        if(this.props.NotificationPayload){
+          this.irisRtcSession.joinSession(config, irisRtcConnection, stream, this.props.NotificationPayload);
+        }else{
+          this.irisRtcSession.createSession(config, irisRtcConnection, stream);
         }
     }
     _onStreamStopped() {

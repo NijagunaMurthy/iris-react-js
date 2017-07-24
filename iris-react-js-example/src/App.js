@@ -196,15 +196,13 @@ class App extends Component {
             Type={this.state.Type}
             RoomId={this.state.RoomId}
             Config={this.state.Config}
+            NotificationPayload={this.state.NotificationPayload}
             onLocalStream={this.onLocalStream}
             onRemoteStream={this.onRemoteStream}
             onChatMessage={this.onChatMessage}
             onChatAck={this.onChatAck}
             onJoined={this.onJoined}
           />
-
-
-
 
         <div id='localStreamDiv' >
           <video id="localStream" styles={localVideoStyles} src={this.state.localStreamUrl} />
