@@ -1,0 +1,11 @@
+{
+    "urls" : {
+      "appServer": "iris-itas-prod.codebig2.net’",
+      "authManager": "iris.comcast.com",
+      "idManager": "idm.iris.comcast.net",
+      "eventManager": "evm.iris.comcast.net",
+      "notificationManager": "ntm.iris.comcast.net"
+    },
+    "appKey":"V82lL4PhNHidA9fXOPilA9aS4SXhUCek",
+    "domain":"iristest.comcast.com"
+}

@@ -1,0 +1,11 @@
+{
+    "urls" : {
+      "appServer": "",
+      "authManager": "",
+      "idManager": "",
+      "eventManager": "",
+      "notificationManager": ""
+    },
+    "appKey":"",
+    "domain":""
+}
