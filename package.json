@@ -4,6 +4,8 @@
   "description": "React version of Iris JS SDK",
   "license": "MIT",
   "main": "dist/index.js",
+  "author": "Comcast",
+  "readmeFilename": "README.md",
   "repository": {
         "type": "git",
         "url": "https://github.com/iris-platform/iris-react-js"
