@@ -7,15 +7,13 @@ import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField';
 
 import './App.css';
-
 import config from './config.json'
 
 if(!IrisRoomContainer || !IrisRtcSdk){
   console.error("iris-react-sdk is not imported");
-
 }
-var routingId = Math.random().toString(36).substr(2, 20) + '@' + config.domain;
 
+var routingId = Math.random().toString(36).substr(2, 20) + '@' + config.domain;
 
 class App extends Component {
 
@@ -40,7 +38,6 @@ class App extends Component {
       numChildren:0
     }
 
-
     this.room = "";
 
     this.makeIrisConnection = this.makeIrisConnection.bind(this);
@@ -55,7 +52,6 @@ class App extends Component {
     this.handleToggle = this.handleToggle.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.updateToVideo = this.updateToVideo.bind(this);
-    this.onAddChild = this.onAddChild.bind(this);
   }
 
   handleToggle = () => this.setState({open: !this.state.open});
@@ -110,46 +106,39 @@ class App extends Component {
 
   getRoomId(){
     fetch("https://"+ config.urls.eventManager + "/v1/createroom/room/"+ this.room, {
-    method : "PUT",
-    headers : {
-      "Authorization": "Bearer " + this.state.token,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-              participants: "",
-          })
-  })
-  .then(response => {
-    console.log(' createroom returned response code ' + response.status);
-    if (response.status >= 200 && response.status < 300) {
+      method : "PUT",
+      headers : {
+        "Authorization": "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({participants: "",})
+    })
+    .then(response => {
+      console.log(' createroom returned response code ' + response.status);
+      if (response.status >= 200 && response.status < 300) {
         return response;
       } else {
         let error = new Error(response.statusText);
         error.response = response;
         throw error;
       }
-  })
-  .then(response => {
+    })
+    .then(response => {
       setTimeout(() => null, 0); // This is a hack, read more at https://github.com/facebook/react-native/issues/6679
       return response.json()
-  })
-  .then((response) => {
-    console.log(' createroom returned response ' + JSON.stringify(response) );
-
-    this.setState(
-      {
+    })
+    .then((response) => {
+      console.log(' createroom returned response ' + JSON.stringify(response));
+      this.setState({
         RoomId:response.room_id,
         Type:"chat",
         roomName:this.room,
         inCall:true
-      }
-    );
-
-  })
-  .catch((error) => {
-    console.log("createroom returned an error ", error);
-  })
-
+      });
+    })
+    .catch((error) => {
+      console.log("createroom returned an error ", error);
+    })
   }
 
   render() {
@@ -158,11 +147,9 @@ class App extends Component {
 
     this.state.messages.forEach(function(message) {
       msgchildren.push(<MsgComponent text={message} />);
-
-    })
+    });
 
     return (
-
       <div className="App">
 
           <AppBar
@@ -202,9 +189,10 @@ class App extends Component {
             onChatMessage={this.onChatMessage}
             onChatAck={this.onChatAck}
             onJoined={this.onJoined}
+            onEventHistory={this.onEventHistory}
           />
 
-        <div id='localStreamDiv' >
+        <div id='localStreamDiv'>
           <video id="localStream" styles={localVideoStyles} src={this.state.localStreamUrl} />
         </div>
 
@@ -213,31 +201,22 @@ class App extends Component {
         </div>
 
         <div>
-              {msgchildren}
+          {msgchildren}
         </div>
 
         {this.state.inCall ? (
           <div>
-          <TextField
-            hintText="Type a message..."
-            fullWidth={true}
-            style={{bottom:'0'}}
-            value={this.state.message}
-            onChange={this.onChatMsgChange}
-          />
+            <TextField
+              hintText="Type a message..."
+              fullWidth={true}
+              style={{bottom:'0'}}
+              value={this.state.message}
+              onChange={this.onChatMsgChange}
+            />
         <RaisedButton label="Send Chat" primary={true} style={style} onClick={() => this.sendChatMessage()}/>
         </div>) : null}
-
-
       </div>
-
     );
-  }
-
-  onAddChild () {
-      this.setState({
-          numChildren: this.state.numChildren + 1
-      });
   }
 
   updateToVideo(){
@@ -253,19 +232,17 @@ class App extends Component {
     if(stream){
       this.setState({
         localStreamUrl : URL.createObjectURL(stream)
-      })
+      });
     }
   }
 
   onChatMsgChange(event, msg){
     this.msg = msg;
-
   }
 
   sendChatMessage(id, msg){
     this.refs.room.sendChatMessage("1234", this.msg);
     // this.refs.room.sendChatMessage(id, msg);
-
   }
 
   onTextChange(roomName){
@@ -277,7 +254,7 @@ class App extends Component {
     if(stream){
       this.setState({
         remoteStreamUrl : URL.createObjectURL(stream)
-      })
+      });
     }
   }
 
@@ -285,14 +262,13 @@ class App extends Component {
     console.log("Chat Message Received ", JSON.stringify(chatPayload));
     var newMessages = this.state.messages;
     newMessages.push(chatPayload.message)
-    this.setState( {messages : newMessages} );
-
+    this.setState({messages : newMessages});
   }
 
   onChatAck(ackPayload){
     console.log("Chat Message ACK Received ", JSON.stringify(ackPayload));
-
   }
+
 }
 
 class MsgComponent extends React.Component {
@@ -302,15 +278,16 @@ class MsgComponent extends React.Component {
         );
     }
 }
+
 const localVideoStyles = {
     display: 'flex',
     height: '100%',
     width: '17%',
     margin: '10px'
 }
+
 const style = {
   margin: 12,
 };
-
 
 export default App;

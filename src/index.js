@@ -184,7 +184,6 @@ class IrisRoomContainer extends Component {
                 this.irisRtcSession.endSession();
             }
         }
-
     }
 
     componentWillUnmount() {
