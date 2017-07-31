@@ -42,6 +42,7 @@ import {IrisRoomContainer, IrisRtcSdk} from 'iris-react-sdk';
             onRemoteStream={this.onRemoteStream}
             onChatMessage={this.onChatMessage}
             onChatAck={this.onChatAck}
+	    onEventHistory={this.onEventHistory}
           />
           )
 		...
@@ -86,6 +87,40 @@ IrisRtcSdk.connect(irisToken, routingId, serverUrl);
 ```js
 import IrisRtcSdk from 'iris-react-sdk';
 IrisRtcSdk.disconnect();
+```
+**Params**
+
+* None
+
+</div>
+----
+
+
+### Message APIs - send message using `sendChatMessage` 
+
+**Example**
+
+```js
+this.refs.room.sendChatMessage(id, message);
+```
+**Params**
+
+* `id` **{String}**: Unique UUID for the message
+* `message` **{String}**: Text message to be sent to participant
+
+</div>
+----
+
+
+
+### Message APIs - get messages history `syncMessages`
+
+This returns a callback onEventHistory on IrisRoomContainer component.
+
+**Example**
+
+```js
+this.refs.room.syncMessages();
 ```
 **Params**
 
