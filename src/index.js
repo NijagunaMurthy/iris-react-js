@@ -117,7 +117,11 @@ class IrisRoomContainer extends Component {
                 this._createStream("audio", this.props.Config);
 
             } else if (this.props.Type === 'chat') {
-                this.irisRtcSession.createChatSession(this.props.Config, this.props.Connection);
+              // Create a new chat session
+              let config = this.props.Config;
+              config.roomId = this.props.RoomId;
+              config.type = this.props.Type;
+              this.irisRtcSession.createChatSession(config, irisRtcConnection);
             }
         }
 
@@ -145,7 +149,11 @@ class IrisRoomContainer extends Component {
                 }
 
                 if (nextProps.Type === 'chat') {
-                    this.irisRtcSession.createChatSession(this.props.Config, irisRtcConnection);
+                  // Create a new chat session
+                  let config = nextProps.Config;
+                  config.roomId = nextProps.RoomId;
+                  config.type = nextProps.Type;
+                  this.irisRtcSession.createChatSession(config, irisRtcConnection);
                 } else if (nextProps.Type === 'video') {
                     this._createStream(nextProps.Type, nextProps.Config);
                 } else if (nextProps.Type === "audio" || nextProps.Type === "pstn") {
@@ -172,6 +180,7 @@ class IrisRoomContainer extends Component {
                 let config = nextProps.Config;
                 config.roomId = nextProps.RoomId;
                 config.type = nextProps.Type;
+
                 if(nextProps.NotificationPayload){
                   this.irisRtcSession.joinChatSession(config, irisRtcConnection, nextProps.NotificationPayload)
                 }else{
@@ -368,7 +377,7 @@ class IrisVideoCallView extends Component {
 
   render(){
     return(
-      <div>
+      <div className="iris-room">
       </div>
     );
   }

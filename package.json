@@ -1,15 +1,15 @@
 {
   "name": "iris-react-sdk",
-  "version": "1.0.0",
+  "version": "1.0.2",
   "description": "React version of Iris JS SDK",
   "license": "MIT",
   "main": "dist/index.js",
   "author": "Comcast",
   "readmeFilename": "README.md",
   "repository": {
-        "type": "git",
-        "url": "https://github.com/iris-platform/iris-react-js"
-    },
+    "type": "git",
+    "url": "https://github.com/iris-platform/iris-react-js"
+  },
   "keywords": [
     "iris",
     "react"
@@ -22,7 +22,7 @@
     ]
   },
   "dependencies": {
-    "iris-js-sdk": "^3.3.5",
+    "iris-js-sdk": "^3.3.6",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",
     "react-dom": "^15.6.1"
@@ -35,8 +35,6 @@
     "babel-preset-es2015": "6.9.0",
     "babel-preset-react": "6.11.1",
     "babel-preset-stage-2": "6.11.0",
-    "chai": "^3.5.0",
-    "jasmine-reporters": "2.2.0",
     "jest": "14.1.0",
     "jquery": "3.1.0",
     "json-loader": "0.5.4",
@@ -53,7 +51,7 @@
     "prebuild": "rimraf dist",
     "build": "npm-run-all --parallel build:*",
     "build:main": "babel --copy-files --out-dir dist src",
-    "build:umd": "webpack --output-filename iris.react.webrtc.js --config webpack.config.js",
-    "build:umd.min": "webpack --output-filename iris.react.webrtc.min.js -p --config webpack.config.js"
+    "build:umd": "webpack --output-filename iris.react.js --config webpack.config.js",
+    "build:umd.min": "webpack --output-filename iris.react.min.js -p --config webpack.config.js"
   }
 }
