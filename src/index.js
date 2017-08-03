@@ -82,7 +82,7 @@ class IrisRoomContainer extends Component {
 
         this.irisRtcSession.onRemoteStream = this._onRemoteStream.bind(this);
         this.irisRtcSession.onSessionCreated = this._onSessionCreated.bind(this);
-        this.irisRtcSession.onSessionJoined = this._onSessionJoined.bind();
+        this.irisRtcSession.onSessionJoined = this._onSessionJoined.bind(this);
         this.irisRtcSession.onSessionConnected = this._onSessionConnected.bind(this);
         this.irisRtcSession.onSessionParticipantJoined = this._onSessionParticipantJoined.bind(this);
         this.irisRtcSession.onSessionParticipantLeft = this._onSessionParticipantLeft.bind(this);
@@ -393,7 +393,7 @@ class IrisRoomContainer extends Component {
             .then((responseData) => {
                 console.log(' Get the list of current messages returned  response ' + JSON.stringify(responseData));
                 if(this.props.onEventHistory){
-                  this.props.onEventHistory(responseData);                  
+                  this.props.onEventHistory(responseData);
                 }
             })
             .catch(function(err) {
