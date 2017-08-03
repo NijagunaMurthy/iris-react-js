@@ -13,26 +13,27 @@ import {IrisRoomContainer, IrisRtcSdk} from 'iris-react-sdk';
 
 1. Make connection using `iristoken` and `routingId`
   	```javascript
-    
-    // Call connection method 
+
+    // Call connection method
     IrisRtcSdk.connect(iristoken, routingId, config.urls.eventManager);
-    
+
     //Listen to onConnected event
     IrisRtcSdk.onConnected = () => {
       console.log("App :: onConnected :: Iris connection successful");
     }
-  
+
     //Listen to notification event
     IrisRtcSdk.onNotification = (payload) => {
       console.log("App:: onNotification :: Payload : ", JSON.stringify(payload));
     }
-    
+
     ```
-    
+
 2. Using `IrisRoomContainer` to initiate/accept call
 
-		return (
-          <IrisRoomContainer
+```
+return (
+	<IrisRoomContainer
             ref="room"
             Type={this.state.Type}
             RoomId={this.state.RoomId}
@@ -43,26 +44,30 @@ import {IrisRoomContainer, IrisRtcSdk} from 'iris-react-sdk';
             onChatMessage={this.onChatMessage}
             onChatAck={this.onChatAck}
 	    onEventHistory={this.onEventHistory}
-          />
-          )
-		...
+	    onDominantSpeakerChanged={this.onDominantSpeakerChanged}
+	    onSessionEnd={this.onSessionEnd}
+	    onSessionParticipantLeft={this.onSessionParticipantLeft}
+	    />
+	)
 
-		let roomId = response.room_id;
-		let Config = {
-			SessionType: 'outgoing',
-			notificationPayload: ''
-		};
-		this.setState({
-			RoomId:roomId,
-			Config:Config,
-		});
+	...
 
+	let roomId = response.room_id;
+	let Config = {
+		SessionType: 'outgoing',
+		notificationPayload: ''
+	};
+	this.setState({
+		RoomId:roomId,
+		Config:Config,
+	});
+```
 
 ## APIs
 
 <div>
 
-### Connection APIs - Make a connection using `connectUsingServer` 
+### Connection APIs - Make a connection using `connectUsingServer`
 
 **Example**
 
@@ -80,7 +85,7 @@ IrisRtcSdk.connect(irisToken, routingId, serverUrl);
 ----
 
 
-### Connection APIs - Disconnect using `disconnect` 
+### Connection APIs - Disconnect using `disconnect`
 
 **Example**
 
@@ -96,7 +101,7 @@ IrisRtcSdk.disconnect();
 ----
 
 
-### Message APIs - send message using `sendChatMessage` 
+### Message APIs - send message using `sendChatMessage`
 
 **Example**
 
