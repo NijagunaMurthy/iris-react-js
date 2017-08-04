@@ -245,7 +245,7 @@ class App extends Component {
     // this.refs.room.sendChatMessage(id, msg);
   }
 
-  onTextChange(roomName){
+  onTextChange(event, roomName){
       this.room = roomName
   }
 
