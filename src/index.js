@@ -103,6 +103,10 @@ class IrisRoomContainer extends Component {
         this._endSession = this._endSession.bind(this);
         this.syncMessages = this.syncMessages.bind(this);
         this.sendChatMessage = this.sendChatMessage.bind(this);
+        this.endSession = this.endSession.bind(this);
+        this.setDisplayName = this.setDisplayName.bind(this);
+        this.audioMuteToggle = this.audioMuteToggle.bind(this);
+        this.videoMuteToggle = this.videoMuteToggle.bind(this);
     };
 
     componentDidMount() {
@@ -228,7 +232,7 @@ class IrisRoomContainer extends Component {
     _endSession() {
       // End the session
       if(this.irisRtcSession.config){
-        this.irisRtcSession.endSession();        
+        this.irisRtcSession.endSession();
       }
 
       // Stop the media stream for non chat sessions
@@ -374,6 +378,30 @@ class IrisRoomContainer extends Component {
         if ((this.props.Type == 'chat' || this.props.Type == 'video') && this.props.RoomId != "") {
             this.irisRtcSession.sendChatMessage(id, message);
         }
+    }
+
+    endSession(){
+      if(this.irisRtcSession){
+        this.irisRtcSession.endSession();        
+      }
+    }
+
+    setDisplayName(name){
+      if(this.irisRtcSession){
+        this.irisRtcSession.setDisplayName(name);
+      }
+    }
+
+    audioMuteToggle(){
+      if(this.irisRtcSession){
+        this.irisRtcSession.audioMuteToggle();
+      }
+    }
+
+    videoMuteToggle(){
+      if(this.irisRtcSession){
+        this.irisRtcSession.videoMuteToggle();
+      }
     }
 
     // Sync chat messages
