@@ -29,7 +29,8 @@ class App extends Component {
         useBridge : true,
         anonymous:true,
         resolution:'hd',
-        routingId:routingId
+        routingId:routingId,
+        videoCodec:'vp8'
       },
       messages : [],
       userid : 0,
@@ -52,6 +53,8 @@ class App extends Component {
     this.handleToggle = this.handleToggle.bind(this);
     this.handleClose = this.handleClose.bind(this);
     this.updateToVideo = this.updateToVideo.bind(this);
+
+    this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
   }
 
   handleToggle = () => this.setState({open: !this.state.open});
@@ -190,10 +193,11 @@ class App extends Component {
             onChatAck={this.onChatAck}
             onJoined={this.onJoined}
             onEventHistory={this.onEventHistory}
+            onSessionParticipantLeft={this.onSessionParticipantLeft}
           />
 
-        <div id='localStreamDiv'>
-          <video id="localStream" styles={localVideoStyles} src={this.state.localStreamUrl} />
+        <div id='localStreamDiv' >
+          <video id="localStream" muted={true} style={{width:50, height:50, bottom:0, left:0}} src={this.state.localStreamUrl} />
         </div>
 
         <div id='remoteStreamDiv'>
@@ -250,11 +254,28 @@ class App extends Component {
   }
 
   onRemoteStream(stream){
-    console.log("App:: Received Local Stream : ", stream);
+    console.log("App:: Received Remote Stream : ", stream);
     if(stream){
+
+      var audioTrack = stream.getAudioTracks()[0];
+      var videoTrack = stream.getVideoTracks()[0];
+
+      if (audioTrack) {
+        console.log("AudioTrack is received : ", audioTrack);
+      }
+
+      if (videoTrack) {
+        console.log("VideoTrack is received : ", videoTrack);
+      }
       this.setState({
         remoteStreamUrl : URL.createObjectURL(stream)
       });
+    }
+  }
+
+  onSessionParticipantLeft(roomId, sessionId, participantJid, closeSession){
+    if(closeSession){
+      this.refs.room.endSession();
     }
   }
 
