@@ -84,34 +84,34 @@ class App extends Component {
   makeIrisConnection(anonymous, type){
     if(anonymous){
       fetch('https://' + config.urls.authManager + '/v1/login/anonymous/', {
-          method: 'POST',
-          headers: {
-              'X-App-Key': config.appKey,
-              'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              UserID: this.routingId,
-          })
+        method: 'POST',
+        headers: {
+          'X-App-Key': config.appKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          UserID: this.routingId,
+        })
       }).then(response => {
-          console.log(' Anonymous login returned response code ' + response.status);
-          if (response.status >= 200 && response.status < 300) {
-              return response;
-          } else {
-              let error = new Error(response.statusText);
-              error.response = response;
-              throw error;
-          }
+        console.log(' Anonymous login returned response code ' + response.status);
+        if (response.status >= 200 && response.status < 300) {
+          return response;
+        } else {
+          let error = new Error(response.statusText);
+          error.response = response;
+          throw error;
+        }
       }).then(response => response.json())
       .then((responseData) => {
-          console.log(' Anonymous login returned response ' + JSON.stringify(responseData));
-          this.setState({
-              token: responseData.Token
-          });
-          IrisRtcSdk.updateConfig(config);
-          IrisRtcSdk.connect(this.state.token, this.routingId, config.urls.eventManager);
+        console.log(' Anonymous login returned response ' + JSON.stringify(responseData));
+        this.setState({
+          token: responseData.Token
+        });
+        IrisRtcSdk.updateConfig(config);
+        IrisRtcSdk.connect(this.state.token, this.routingId, config.urls.eventManager);
       })
       .catch(function (err) {
-          console.log(' Anonymous login returned an error  ' + err);
+        console.log(' Anonymous login returned an error  ' + err);
       });
     }else{
       IrisRtcSdk.updateConfig(config);
@@ -338,10 +338,10 @@ class App extends Component {
     }
   }
   onEmailId(event, email){
-      this.emailId = email
+    this.emailId = email
   }
   onPassword(event, password){
-      this.password = password
+    this.password = password
   }
 
   onJoinVideo(event){
@@ -368,19 +368,19 @@ class App extends Component {
       this.setState({
         userLogin : true
       })
-        var headers = {
-          'Accept': 'application/json',
-          "Content-Type": "application/json",
-          "Authorization": "Basic " + encodedKey
-        }
-        var body = {
-          "Type": "Email",
-          "Email": this.emailId,
-          "Password": this.password
-        }
+      var headers = {
+        'Accept': 'application/json',
+        "Content-Type": "application/json",
+        "Authorization": "Basic " + encodedKey
+      }
+      var body = {
+        "Type": "Email",
+        "Email": this.emailId,
+        "Password": this.password
+      }
 
-        console.log("headers :: "+ JSON.stringify(headers));
-        console.log("body :: "+JSON.stringify(body));
+      console.log("headers :: "+ JSON.stringify(headers));
+      console.log("body :: "+JSON.stringify(body));
 
 
       fetch("https://"+ config.urls.authManager + "/v1/login/", {
@@ -513,21 +513,21 @@ class App extends Component {
     return (
       <div className="App">
 
-          <AppBar
-            title="Iris React Example"
-            iconClassNameRight="muidocs-icon-navigation-expand-more"
+        <AppBar
+          title="Iris React Example"
+          iconClassNameRight="muidocs-icon-navigation-expand-more"
           />
-          <TextField
-            className={(this.state.inCall  && this.anonymous) ? "hidden" : "chat" }
-            hintText={this.state.connected ? "Email Id" : "Room Name"}
-            onChange={this.onTextChange}
+        <TextField
+          className={(this.state.inCall  && this.anonymous) ? "hidden" : "chat" }
+          hintText={this.state.connected ? "Email Id" : "Room Name"}
+          onChange={this.onTextChange}
           />
 
-          <RaisedButton
-            style={{top:'150', margin:'12'}}
-            label="Join Chat"
-            primary={true}
-            onClick={this.onJoinChat}
+        <RaisedButton
+          style={{top:'150', margin:'12'}}
+          label="Join Chat"
+          primary={true}
+          onClick={this.onJoinChat}
           />
 
         {this.state.connected ? (
@@ -536,85 +536,85 @@ class App extends Component {
             label="Video Call"
             primary={true}
             onClick={this.onJoinVideo}
-          />
+            />
 
         ) : null}
 
         {!this.state.connected ? (
           <div className={this.state.inCall ? "hidden" : "chat" }><br/><br/><b>OR</b><br/>
-            <TextField
-              className={this.state.inCall ? "hidden" : "chat" }
-              hintText="Email Id"
-              onChange={this.onEmailId}
+          <TextField
+            className={this.state.inCall ? "hidden" : "chat" }
+            hintText="Email Id"
+            onChange={this.onEmailId}
             />
-            <br/>
-              <TextField
-              className={this.state.inCall ? "hidden" : "chat" }
-              hintText="Password"
-              type='password'
-              onChange={this.onPassword}
-              />
-          </div>
-        ) : null}
-
-
-
-          {!this.state.connected ? (
-            <RaisedButton
-              style={{margin:'12'}}
-              label="Login"
-              primary={true}
-              onClick={this.onLogin}
+          <br/>
+          <TextField
+            className={this.state.inCall ? "hidden" : "chat" }
+            hintText="Password"
+            type='password'
+            onChange={this.onPassword}
             />
-          ) : null}
-
-          {this.state.inCall ? (
-            <RaisedButton
-              style={{margin:'12'}}
-              label="Video Call"
-              primary={true}
-              onClick={this.updateToVideo}
-            />
-          ) : null}
+        </div>
+      ) : null}
 
 
-          <IrisRoomContainer
-            ref="room"
-            Type={this.state.Type}
-            RoomId={this.state.RoomId}
-            Config={this.state.Config}
-            NotificationPayload={this.state.NotificationPayload}
-            onLocalStream={this.onLocalStream}
-            onRemoteStream={this.onRemoteStream}
-            onChatMessage={this.onChatMessage}
-            onChatAck={this.onChatAck}
-            onJoined={this.onJoined}
-            onEventHistory={this.onEventHistory}
-            onSessionParticipantLeft={this.onSessionParticipantLeft}
+
+      {!this.state.connected ? (
+        <RaisedButton
+          style={{margin:'12'}}
+          label="Login"
+          primary={true}
+          onClick={this.onLogin}
           />
+      ) : null}
 
-        <div id='localStreamDiv' >
-          <video id="localStream" muted={true} style={{width:50, height:50, bottom:0, left:0}} src={this.state.localStreamUrl} />
-        </div>
+      {this.state.inCall ? (
+        <RaisedButton
+          style={{margin:'12'}}
+          label="Video Call"
+          primary={true}
+          onClick={this.updateToVideo}
+          />
+      ) : null}
 
-        <div id='remoteStreamDiv'>
-          <video id="remoteStream" src={this.state.remoteStreamUrl} />
-        </div>
 
+      <IrisRoomContainer
+        ref="room"
+        Type={this.state.Type}
+        RoomId={this.state.RoomId}
+        Config={this.state.Config}
+        NotificationPayload={this.state.NotificationPayload}
+        onLocalStream={this.onLocalStream}
+        onRemoteStream={this.onRemoteStream}
+        onChatMessage={this.onChatMessage}
+        onChatAck={this.onChatAck}
+        onJoined={this.onJoined}
+        onEventHistory={this.onEventHistory}
+        onSessionParticipantLeft={this.onSessionParticipantLeft}
+        />
+
+      <div id='localStreamDiv' >
+        <video id="localStream" muted={true} style={{width:50, height:50, bottom:0, left:0}} src={this.state.localStreamUrl} />
+      </div>
+
+      <div id='remoteStreamDiv'>
+        <video id="remoteStream" src={this.state.remoteStreamUrl} />
+      </div>
+
+      <div>
+        {msgchildren}
+      </div>
+
+      {this.state.inCall ? (
         <div>
-          {msgchildren}
-        </div>
-
-        {this.state.inCall ? (
-          <div>
-            <TextField
-              hintText="Type a message..."
-              fullWidth={true}
-              style={{bottom:'0'}}
-              value={this.state.message}
-              onChange={this.onChatMsgChange}
+          <TextField
+            hintText="Type a message..."
+            fullWidth={true}
+            style={{bottom:'0'}}
+            value={this.state.message}
+            onChange={this.onChatMsgChange}
             />
-        <RaisedButton label="Send Chat" primary={true} style={style} onClick={() => this.sendChatMessage()}/>
+          <RaisedButton label="Send Chat" primary={true} style={style} onClick={() => this.sendChatMessage()}/>
         </div>) : null}
       </div>
     );
@@ -623,18 +623,18 @@ class App extends Component {
 }
 
 class MsgComponent extends React.Component {
-    render () {
-        return (
-            <div>{this.props.text}</div>
-        );
-    }
+  render () {
+    return (
+      <div>{this.props.text}</div>
+    );
+  }
 }
 
 const localVideoStyles = {
-    display: 'flex',
-    height: '100%',
-    width: '17%',
-    margin: '10px'
+  display: 'flex',
+  height: '100%',
+  width: '17%',
+  margin: '10px'
 }
 
 const style = {
