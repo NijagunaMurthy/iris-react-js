@@ -9,11 +9,13 @@ import TextField from 'material-ui/TextField';
 import './App.css';
 import config from './config.json'
 
+var encodedKey = window.btoa(config.appKey + ":" + config.appSecret);
+console.log("Encoded App key : "+encodedKey );
+
 if(!IrisRoomContainer || !IrisRtcSdk){
   console.error("iris-react-sdk is not imported");
 }
 
-var routingId = Math.random().toString(36).substr(2, 20) + '@' + config.domain;
 
 class App extends Component {
 
@@ -21,17 +23,20 @@ class App extends Component {
     super(props);
     this.state = {
       token: '',
-      routingId:'',
+      routingId:Math.random().toString(36).substr(2, 20) + '@' + config.domain,
       Type:'chat',
       roomName:'testroom',
       mount : false,
       Config:{
         useBridge : true,
         anonymous:true,
-        resolution:'hd',
-        routingId:routingId,
-        videoCodec:'vp8'
+        resolution:'640',
+        routingId:this.routingId,
+        videoCodec:'vp8',
+        connected:false,
+        userLogin:false
       },
+      NotificationPayload:"",
       messages : [],
       userid : 0,
       users : 0,
@@ -40,6 +45,9 @@ class App extends Component {
     }
 
     this.room = "";
+    this.emailId="";
+    this.password="";
+    this.toUser = "";
 
     this.makeIrisConnection = this.makeIrisConnection.bind(this);
     this.getRoomId = this.getRoomId.bind(this);
@@ -54,6 +62,13 @@ class App extends Component {
     this.handleClose = this.handleClose.bind(this);
     this.updateToVideo = this.updateToVideo.bind(this);
 
+    this.onEmailId = this.onEmailId.bind(this);
+    this.onPassword = this.onPassword.bind(this);
+    this.onJoin = this.onJoin.bind(this);
+    this.onJoinChat = this.onJoinChat.bind(this);
+    this.onJoinVideo = this.onJoinVideo.bind(this);
+    this.onLogin = this.onLogin.bind(this);
+
     this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
   }
 
@@ -62,52 +77,74 @@ class App extends Component {
   handleClose = () => this.setState({open: false});
 
   componentDidMount(){
-    this.makeIrisConnection();
+    // this.makeIrisConnection();
   }
 
-  makeIrisConnection(){
-    fetch('https://' + config.urls.authManager + '/v1/login/anonymous/', {
-        method: 'POST',
-        headers: {
-            'X-App-Key': config.appKey,
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-            UserID: routingId,
-        })
-    }).then(response => {
-        console.log(' Anonymous login returned response code ' + response.status);
-        if (response.status >= 200 && response.status < 300) {
-            return response;
-        } else {
-            let error = new Error(response.statusText);
-            error.response = response;
-            throw error;
-        }
-    }).then(response => response.json())
-    .then((responseData) => {
-        console.log(' Anonymous login returned response ' + JSON.stringify(responseData));
-        this.setState({
-            token: responseData.Token
-        });
-        IrisRtcSdk.updateConfig(config);
-        IrisRtcSdk.connect(this.state.token, routingId, config.urls.eventManager);
-    })
-    .catch(function (err) {
-        console.log(' Anonymous login returned an error  ' + err);
-    });
+
+  makeIrisConnection(anonymous, type){
+    if(anonymous){
+      fetch('https://' + config.urls.authManager + '/v1/login/anonymous/', {
+          method: 'POST',
+          headers: {
+              'X-App-Key': config.appKey,
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              UserID: this.routingId,
+          })
+      }).then(response => {
+          console.log(' Anonymous login returned response code ' + response.status);
+          if (response.status >= 200 && response.status < 300) {
+              return response;
+          } else {
+              let error = new Error(response.statusText);
+              error.response = response;
+              throw error;
+          }
+      }).then(response => response.json())
+      .then((responseData) => {
+          console.log(' Anonymous login returned response ' + JSON.stringify(responseData));
+          this.setState({
+              token: responseData.Token
+          });
+          IrisRtcSdk.updateConfig(config);
+          IrisRtcSdk.connect(this.state.token, this.routingId, config.urls.eventManager);
+      })
+      .catch(function (err) {
+          console.log(' Anonymous login returned an error  ' + err);
+      });
+    }else{
+      IrisRtcSdk.updateConfig(config);
+      IrisRtcSdk.connect(this.state.token, this.routingId, config.urls.eventManager);
+    }
+
 
     IrisRtcSdk.onConnected = () => {
       console.log("IrisRtcSdk :: App :: Iris connection successful");
+      this.setState({
+        connected : true
+      });
+      IrisRtcSdk.updateConfig(config);
+      if(anonymous){
+        this.getRoomId("", type);
+      }
     }
 
-    IrisRtcSdk.onNotification = (payload) => {
-      console.log("App:: Notification Received :: ", JSON.stringify(payload));
-    }
+    IrisRtcSdk.onNotification = (notificationInfo) => {
 
+      // onNotification Received join the call
+      if(notificationInfo.type == "notify"){
+        this.setState({
+          NotificationPayload : notificationInfo,
+          Type :notificationInfo.userdata.notification.type,
+          RoomId:notificationInfo.roomId
+        })
+      }
+      console.log("App:: Notification Received :: ", JSON.stringify(notificationInfo));
+    }
   }
 
-  getRoomId(){
+  getRoomId(event, type){
     fetch("https://"+ config.urls.eventManager + "/v1/createroom/room/"+ this.room, {
       method : "PUT",
       headers : {
@@ -117,7 +154,7 @@ class App extends Component {
       body: JSON.stringify({participants: "",})
     })
     .then(response => {
-      console.log(' createroom returned response code ' + response.status);
+      console.log(' anonymous createroom returned response code ' + response.status);
       if (response.status >= 200 && response.status < 300) {
         return response;
       } else {
@@ -131,12 +168,14 @@ class App extends Component {
       return response.json()
     })
     .then((response) => {
-      console.log(' createroom returned response ' + JSON.stringify(response));
+      console.log(' anonymous createroom returned response ' + JSON.stringify(response));
       this.setState({
         RoomId:response.room_id,
-        Type:"chat",
+        Type: type ? type : "chat",
         roomName:this.room,
-        inCall:true
+        inCall:true,
+        remoteStreamUrl : "",
+        localStreamUrl : ""
       });
     })
     .catch((error) => {
@@ -144,12 +183,331 @@ class App extends Component {
     })
   }
 
+  getRoomIdWithParticipants(event, type){
+
+    // First fetch routingId for callee
+    fetch("https://"+ config.urls.idManager + "/v1/routingid/appdomain/"+config.domain+"/publicid/"+this.toUser, {
+      method : "GET",
+      headers : {
+        "Authorization": "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      }
+    })
+    .then(response => {
+      console.log(' get participant routingId returned response code ' + response.status);
+      if (response.status >= 200 && response.status < 300) {
+        return response;
+      } else {
+        let error = new Error(response.statusText);
+        error.response = response;
+        throw error;
+      }
+    })
+    .then(response => {
+      setTimeout(() => null, 0); // This is a hack, read more at https://github.com/facebook/react-native/issues/6679
+      return response.json()
+    })
+    .then((response) => {
+      console.log(' get participant routingId ' + JSON.stringify(response));
+      var toRoutingId = response.routing_id;
+
+      var participants = [];
+
+      participants.push({
+        "history": true,
+        "notification": true,
+        "owner": true,
+        "room_identifier": true,
+        "routing_id": toRoutingId
+      });
+      participants.push({
+        "history": true,
+        "notification": true,
+        "owner": true,
+        "room_identifier": true,
+        "routing_id": this.routingId
+      });
+
+      var headers = {
+        "Authorization": "Bearer " + this.state.token,
+        "Content-Type": "application/json",
+      }
+      console.log("headers : "+JSON.stringify(headers));
+
+      console.log("Participants : "+JSON.stringify({participants: participants}));
+
+
+      // Get roomId
+      fetch("https://"+ config.urls.eventManager + "/v1/createroom/participants", {
+        method : "PUT",
+        headers : headers,
+        body: JSON.stringify({participants: participants})
+      })
+      .then(response => {
+        console.log(' createroom returned response code ' + response.status);
+        if (response.status >= 200 && response.status < 300) {
+          return response;
+        } else {
+          let error = new Error(response.statusText);
+          error.response = response;
+          throw error;
+        }
+      })
+      .then(response => {
+        setTimeout(() => null, 0); // This is a hack, read more at https://github.com/facebook/react-native/issues/6679
+        return response.json()
+      })
+      .then((response) => {
+        console.log(' createroom returned response ' + JSON.stringify(response));
+
+        var userData = JSON.stringify({
+          "data": {
+            "cid": this.emailId,
+            "cname": this.emailId
+          },
+          "notification": {
+            "topic": config.domain + "/" + type,
+            "type": type
+          }
+        });
+
+        var userConfig = this.state.Config;
+        userConfig.userData = userData;
+        userConfig.sessionType = "create";
+
+        this.setState({
+          RoomId:response.room_id,
+          Type: type ? type : "chat",
+          Config:userConfig,
+          inCall:true,
+          remoteStreamUrl : "",
+          localStreamUrl : ""
+        });
+      })
+      .catch((error) => {
+        console.log("createroom returned an error ", error);
+      })
+    })
+    .catch((error) => {
+      console.log("Get participant routingId returned an error ", error);
+    })
+  }
+
+
+  updateToVideo(){
+    if(this.state.RoomId){
+      this.setState({Type:'video'})
+    }else{
+      this.getRoomId('video');
+    }
+  }
+
+  updateToAudio(){
+    if(this.state.RoomId){
+      this.setState({Type:'audio'})
+    }else{
+      this.getRoomId('audio');
+    }
+  }
+
+  onLocalStream(stream){
+    console.log("App:: Received Local Stream : ", stream);
+    if(stream){
+      this.setState({
+        localStreamUrl : URL.createObjectURL(stream)
+      });
+    }
+  }
+
+  onChatMsgChange(event, msg){
+    this.msg = msg;
+  }
+
+  sendChatMessage(id, msg){
+    this.refs.room.sendChatMessage(Math.random().toString(36).substr(2, 20), this.msg);
+    // this.refs.room.sendChatMessage(id, msg);
+    // this.mgs = "";
+    // this.setState({message:""})
+  }
+
+  onTextChange(event, string){
+    if(!this.state.userLogin){
+      this.room = string
+    }else {
+      this.toUser = string;
+    }
+  }
+  onEmailId(event, email){
+      this.emailId = email
+  }
+  onPassword(event, password){
+      this.password = password
+  }
+
+  onJoinVideo(event){
+    this.onJoin(event, "video");
+  }
+
+  onJoinChat(event){
+    this.onJoin(event, "chat");
+  }
+
+  onLogin(event){
+    this.onJoin(event, "video");
+  }
+
+  onJoin(event, type){
+
+    if(this.state.connected){
+      this.getRoomIdWithParticipants(event, type);
+    }else if(this.room){
+      this.anonymous = this.room ? true : false;
+      this.makeIrisConnection(this.anonymous, type);
+    }else if(this.emailId && this.password){
+
+      this.setState({
+        userLogin : true
+      })
+        var headers = {
+          'Accept': 'application/json',
+          "Content-Type": "application/json",
+          "Authorization": "Basic " + encodedKey
+        }
+        var body = {
+          "Type": "Email",
+          "Email": this.emailId,
+          "Password": this.password
+        }
+
+        console.log("headers :: "+ JSON.stringify(headers));
+        console.log("body :: "+JSON.stringify(body));
+
+
+      fetch("https://"+ config.urls.authManager + "/v1/login/", {
+        method : "POST",
+        headers : headers,
+        body: JSON.stringify(body)
+      })
+      .then(response => {
+        console.log(' Email login returned response code ' + response.status);
+        if (response.status >= 200 && response.status < 300) {
+          return response;
+        } else {
+          let error = new Error(response.statusText);
+          error.response = response;
+          throw error;
+        }
+      })
+      .then(response => {
+        setTimeout(() => null, 0); // This is a hack, read more at https://github.com/facebook/react-native/issues/6679
+        return response.json()
+      })
+      .then((response) => {
+        console.log(' Email login returned response ' + JSON.stringify(response));
+
+        var irisToken = response.Token;
+
+        this.setState({
+          token:irisToken
+        })
+
+        // Get Identities -
+        fetch("https://"+ config.urls.idManager + "/v1/allidentities", {
+          method : "GET",
+          headers : {
+            "Authorization": "Bearer " + irisToken,
+            "Content-Type": "application/json",
+          }
+        })
+        .then(response => {
+          console.log(' Get allidentities returned response code ' + response.status);
+          if (response.status >= 200 && response.status < 300) {
+            return response;
+          } else {
+            let error = new Error(response.statusText);
+            error.response = response;
+            throw error;
+          }
+        })
+        .then(response => {
+          setTimeout(() => null, 0); // This is a hack, read more at https://github.com/facebook/react-native/issues/6679
+          return response.json()
+        })
+        .then((response) => {
+          console.log(' Get allidentities returned response ' + JSON.stringify(response));
+
+          var publicIds = response.public_ids;
+          this.routingId = response.routing_id;
+
+          var conf = this.state.Config;
+          conf.routingId = this.routingId;
+
+          this.setState({
+            Config :conf
+          })
+
+          this.makeIrisConnection(false, type);
+
+        })
+        .catch((error) => {
+          console.log("Get allidentities returned an error ", error);
+        })
+
+      })
+      .catch((error) => {
+        console.log("Email login returned an error ", error);
+      })
+
+    }else {
+      console.error("Please enter room name or emailId and password");
+      return;
+    }
+  }
+
+
+  onRemoteStream(stream){
+    console.log("App:: Received Remote Stream : ", stream);
+    if(stream){
+
+      var audioTrack = stream.getAudioTracks()[0];
+      var videoTrack = stream.getVideoTracks()[0];
+
+      if (audioTrack) {
+        console.log("AudioTrack is received : ", audioTrack);
+      }
+
+      if (videoTrack) {
+        console.log("VideoTrack is received : ", videoTrack);
+      }
+      this.setState({
+        remoteStreamUrl : URL.createObjectURL(stream)
+      });
+    }
+  }
+
+  onSessionParticipantLeft(roomId, sessionId, participantJid, closeSession){
+    if(closeSession){
+      // this.refs.room.endSession();
+    }
+  }
+
+  onChatMessage(chatPayload){
+    console.log("Chat Message Received ", JSON.stringify(chatPayload));
+    var newMessages = this.state.messages;
+    newMessages.push(chatPayload.message)
+    this.setState({messages : newMessages});
+  }
+
+  onChatAck(ackPayload){
+    console.log("Chat Message ACK Received ", JSON.stringify(ackPayload));
+  }
+
   render() {
 
     var msgchildren = [];
 
     this.state.messages.forEach(function(message) {
-      msgchildren.push(<MsgComponent text={message} />);
+      msgchildren.push(<MsgComponent text={message} key={Math.random().toString(36).substr(2, 20) } />);
     });
 
     return (
@@ -160,26 +518,65 @@ class App extends Component {
             iconClassNameRight="muidocs-icon-navigation-expand-more"
           />
           <TextField
-            className={this.state.inCall ? "hidden" : "chat" }
-            hintText="Room Name"
-            floatingLabelText="Please enter a room name"
+            className={(this.state.inCall  && this.anonymous) ? "hidden" : "chat" }
+            hintText={this.state.connected ? "Email Id" : "Room Name"}
             onChange={this.onTextChange}
           />
 
           <RaisedButton
-            className={this.state.inCall ? "hidden" : "chat" }
             style={{top:'150', margin:'12'}}
             label="Join Chat"
             primary={true}
-            onClick={this.getRoomId}
+            onClick={this.onJoinChat}
           />
+
+        {this.state.connected ? (
           <RaisedButton
-            className={this.state.inCall ? "chat" : "hidden" }
-            style={{margin:'12'}}
+            style={{top:'150', margin:'12'}}
             label="Video Call"
             primary={true}
-            onClick={this.updateToVideo}
+            onClick={this.onJoinVideo}
           />
+
+        ) : null}
+
+        {!this.state.connected ? (
+          <div className={this.state.inCall ? "hidden" : "chat" }><br/><br/><b>OR</b><br/>
+            <TextField
+              className={this.state.inCall ? "hidden" : "chat" }
+              hintText="Email Id"
+              onChange={this.onEmailId}
+            />
+            <br/>
+              <TextField
+              className={this.state.inCall ? "hidden" : "chat" }
+              hintText="Password"
+              type='password'
+              onChange={this.onPassword}
+              />
+          </div>
+        ) : null}
+
+
+
+          {!this.state.connected ? (
+            <RaisedButton
+              style={{margin:'12'}}
+              label="Login"
+              primary={true}
+              onClick={this.onLogin}
+            />
+          ) : null}
+
+          {this.state.inCall ? (
+            <RaisedButton
+              style={{margin:'12'}}
+              label="Video Call"
+              primary={true}
+              onClick={this.updateToVideo}
+            />
+          ) : null}
+
 
           <IrisRoomContainer
             ref="room"
@@ -223,79 +620,12 @@ class App extends Component {
     );
   }
 
-  updateToVideo(){
-    if(this.state.RoomId){
-      this.setState({Type:'video'})
-    }else{
-      this.getRoomId();
-    }
-  }
-
-  onLocalStream(stream){
-    console.log("App:: Received Local Stream : ", stream);
-    if(stream){
-      this.setState({
-        localStreamUrl : URL.createObjectURL(stream)
-      });
-    }
-  }
-
-  onChatMsgChange(event, msg){
-    this.msg = msg;
-  }
-
-  sendChatMessage(id, msg){
-    this.refs.room.sendChatMessage("1234", this.msg);
-    // this.refs.room.sendChatMessage(id, msg);
-  }
-
-  onTextChange(event, roomName){
-      this.room = roomName
-  }
-
-  onRemoteStream(stream){
-    console.log("App:: Received Remote Stream : ", stream);
-    if(stream){
-
-      var audioTrack = stream.getAudioTracks()[0];
-      var videoTrack = stream.getVideoTracks()[0];
-
-      if (audioTrack) {
-        console.log("AudioTrack is received : ", audioTrack);
-      }
-
-      if (videoTrack) {
-        console.log("VideoTrack is received : ", videoTrack);
-      }
-      this.setState({
-        remoteStreamUrl : URL.createObjectURL(stream)
-      });
-    }
-  }
-
-  onSessionParticipantLeft(roomId, sessionId, participantJid, closeSession){
-    if(closeSession){
-      this.refs.room.endSession();
-    }
-  }
-
-  onChatMessage(chatPayload){
-    console.log("Chat Message Received ", JSON.stringify(chatPayload));
-    var newMessages = this.state.messages;
-    newMessages.push(chatPayload.message)
-    this.setState({messages : newMessages});
-  }
-
-  onChatAck(ackPayload){
-    console.log("Chat Message ACK Received ", JSON.stringify(ackPayload));
-  }
-
 }
 
 class MsgComponent extends React.Component {
     render () {
         return (
-            <div styles={{marginLeft : '0'}}>{this.props.text}</div>
+            <div>{this.props.text}</div>
         );
     }
 }

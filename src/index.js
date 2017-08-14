@@ -21,23 +21,24 @@ if (IrisRtcConnection) {
             irisRtcConnection.connect(token, routingId, evmUrl);
 
             irisRtcConnection.onConnected = () => {
-                console.log("App :: Iris connection successful");
+                console.log("IrisReact :: Iris connection successful");
                 IrisRtcSdk.onConnected();
             }
 
             irisRtcConnection.onConnectionFailed = () => {
-                console.log("App :: Iris connection failed");
+                console.log("IrisReact :: Iris connection failed");
             }
 
             irisRtcConnection.onClose = () => {
-                console.log("App :: Iris connection closed");
+                console.log("IrisReact :: Iris connection closed");
             }
 
             irisRtcConnection.onError = () => {
-                console.log("App :: Iris connection error");
+                console.log("IrisReact :: Iris connection error");
             }
 
             irisRtcConnection.onNotification = (payload) => {
+              console.log("IrisReact :: onNotification :: " + JSON.stringify(payload));
               IrisRtcSdk.onNotification(payload);
             }
         }
@@ -63,42 +64,43 @@ class IrisRoomContainer extends Component {
 
     constructor(props) {
         super(props);
+        //
+        // // Create a new Iris Rtc Session object
+        // this.irisRtcSession = new IrisRtcSession();
+        //
+        // if (!this.irisRtcSession) {
+        //     console.log('Failed to initialize IrisRtcSession');
+        //     return;
+        // }
+        //
+        // // Create new Iris Rtc Stream object
+        // this.irisRtcStream = new IrisRtcStream();
+        //
+        // if (!this.irisRtcStream) {
+        //     console.log('Failed to initialize IrisRtcStream');
+        //     return;
+        // }
+        //
+        // this.irisRtcStream.onLocalStream = this._onLocalStream.bind(this);
+        // this.irisRtcStream.irisVideoStreamStopped = this._onStreamStopped.bind(this)
+        //
+        // this.irisRtcSession.onRemoteStream = this._onRemoteStream.bind(this);
+        // this.irisRtcSession.onSessionCreated = this._onSessionCreated.bind(this);
+        // this.irisRtcSession.onSessionJoined = this._onSessionJoined.bind(this);
+        // this.irisRtcSession.onSessionConnected = this._onSessionConnected.bind(this);
+        // this.irisRtcSession.onSessionParticipantJoined = this._onSessionParticipantJoined.bind(this);
+        // this.irisRtcSession.onSessionParticipantLeft = this._onSessionParticipantLeft.bind(this);
+        // this.irisRtcSession.onSessionEnd = this._onSessionEnd.bind(this);
+        // this.irisRtcSession.onChatMessage = this._onChatMessage.bind(this);
+        // this.irisRtcSession.onChatAck = this._onChatAck.bind(this);
+        // this.irisRtcSession.onParticipantVideoMuted = this._onParticipantVideoMuted.bind(this);
+        // this.irisRtcSession.onParticipantAudioMuted = this._onParticipantAudioMuted.bind(this);
+        // this.irisRtcSession.onUserProfileChange = this._onUserProfileChange.bind(this);
+        // this.irisRtcSession.onError = this._onError.bind(this);
+        // this.irisRtcSession.onEvent = this._onEvent.bind(this);
+        // this.irisRtcSession.onDominantSpeakerChanged = this._onDominantSpeakerChanged.bind(this);
 
-        // Create a new Iris Rtc Session object
-        this.irisRtcSession = new IrisRtcSession();
-
-        if (!this.irisRtcSession) {
-            console.log('Failed to initialize IrisRtcSession');
-            return;
-        }
-
-        // Create new Iris Rtc Stream object
-        this.irisRtcStream = new IrisRtcStream();
-
-        if (!this.irisRtcStream) {
-            console.log('Failed to initialize IrisRtcStream');
-            return;
-        }
-
-        this.irisRtcStream.onLocalStream = this._onLocalStream.bind(this);
-        this.irisRtcStream.irisVideoStreamStopped = this._onStreamStopped.bind(this)
-
-        this.irisRtcSession.onRemoteStream = this._onRemoteStream.bind(this);
-        this.irisRtcSession.onSessionCreated = this._onSessionCreated.bind(this);
-        this.irisRtcSession.onSessionJoined = this._onSessionJoined.bind(this);
-        this.irisRtcSession.onSessionConnected = this._onSessionConnected.bind(this);
-        this.irisRtcSession.onSessionParticipantJoined = this._onSessionParticipantJoined.bind(this);
-        this.irisRtcSession.onSessionParticipantLeft = this._onSessionParticipantLeft.bind(this);
-        this.irisRtcSession.onSessionEnd = this._onSessionEnd.bind(this);
-        this.irisRtcSession.onChatMessage = this._onChatMessage.bind(this);
-        this.irisRtcSession.onChatAck = this._onChatAck.bind(this);
-        this.irisRtcSession.onParticipantVideoMuted = this._onParticipantVideoMuted.bind(this);
-        this.irisRtcSession.onParticipantAudioMuted = this._onParticipantAudioMuted.bind(this);
-        this.irisRtcSession.onUserProfileChange = this._onUserProfileChange.bind(this);
-        this.irisRtcSession.onError = this._onError.bind(this);
-        this.irisRtcSession.onEvent = this._onEvent.bind(this);
-        this.irisRtcSession.onDominantSpeakerChanged = this._onDominantSpeakerChanged.bind(this);
-
+        this.createNewIrisSession = this.createNewIrisSession.bind(this);
         this._createStream = this._createStream.bind(this);
         this._endSession = this._endSession.bind(this);
         this.syncMessages = this.syncMessages.bind(this);
@@ -111,6 +113,7 @@ class IrisRoomContainer extends Component {
 
     componentDidMount() {
 
+        this.createNewIrisSession();
         if (!this.props.Config || !this.props.Type || !this.props.RoomId) {
             console.warn("Please check the props");
         }
@@ -162,6 +165,7 @@ class IrisRoomContainer extends Component {
                 this._endSession();
 
                 if (nextProps.Type === 'chat') {
+                  this.createNewIrisSession();
                   // Create a new chat session
                   let config = nextProps.Config;
                   config.roomId = nextProps.RoomId;
@@ -198,7 +202,7 @@ class IrisRoomContainer extends Component {
                 let config = nextProps.Config;
                 config.roomId = nextProps.RoomId;
                 config.type = nextProps.Type;
-
+                this.createNewIrisSession();
                 if(nextProps.NotificationPayload){
                   this.irisRtcSession.joinChatSession(config, irisRtcConnection, nextProps.NotificationPayload)
                 }else{
@@ -257,11 +261,55 @@ class IrisRoomContainer extends Component {
         let config = this.props.Config;
         config.roomId = this.props.RoomId;
         config.type = this.props.Type;
-        if(this.props.NotificationPayload){
-          this.irisRtcSession.joinSession(config, irisRtcConnection, stream, this.props.NotificationPayload);
-        }else{
-          this.irisRtcSession.createSession(config, irisRtcConnection, stream);
-        }
+        var self = this;
+        this.createNewIrisSession();
+        // setTimeout(function(){
+
+          if(self.props.NotificationPayload){
+            self.irisRtcSession.joinSession(config, irisRtcConnection, stream, self.props.NotificationPayload);
+          }else{
+            self.irisRtcSession.createSession(config, irisRtcConnection, stream);
+          }
+
+        // }, 1000);
+    }
+
+    createNewIrisSession(){
+
+              // Create a new Iris Rtc Session object
+              this.irisRtcSession = new IrisRtcSession();
+
+              if (!this.irisRtcSession) {
+                  console.log('Failed to initialize IrisRtcSession');
+                  return;
+              }
+
+              // Create new Iris Rtc Stream object
+              this.irisRtcStream = new IrisRtcStream();
+
+              if (!this.irisRtcStream) {
+                  console.log('Failed to initialize IrisRtcStream');
+                  return;
+              }
+
+              this.irisRtcStream.onLocalStream = this._onLocalStream.bind(this);
+              this.irisRtcStream.irisVideoStreamStopped = this._onStreamStopped.bind(this)
+
+              this.irisRtcSession.onRemoteStream = this._onRemoteStream.bind(this);
+              this.irisRtcSession.onSessionCreated = this._onSessionCreated.bind(this);
+              this.irisRtcSession.onSessionJoined = this._onSessionJoined.bind(this);
+              this.irisRtcSession.onSessionConnected = this._onSessionConnected.bind(this);
+              this.irisRtcSession.onSessionParticipantJoined = this._onSessionParticipantJoined.bind(this);
+              this.irisRtcSession.onSessionParticipantLeft = this._onSessionParticipantLeft.bind(this);
+              this.irisRtcSession.onSessionEnd = this._onSessionEnd.bind(this);
+              this.irisRtcSession.onChatMessage = this._onChatMessage.bind(this);
+              this.irisRtcSession.onChatAck = this._onChatAck.bind(this);
+              this.irisRtcSession.onParticipantVideoMuted = this._onParticipantVideoMuted.bind(this);
+              this.irisRtcSession.onParticipantAudioMuted = this._onParticipantAudioMuted.bind(this);
+              this.irisRtcSession.onUserProfileChange = this._onUserProfileChange.bind(this);
+              this.irisRtcSession.onError = this._onError.bind(this);
+              this.irisRtcSession.onEvent = this._onEvent.bind(this);
+              this.irisRtcSession.onDominantSpeakerChanged = this._onDominantSpeakerChanged.bind(this);
     }
 
     _onStreamStopped() {
@@ -382,7 +430,7 @@ class IrisRoomContainer extends Component {
 
     endSession(){
       if(this.irisRtcSession){
-        this.irisRtcSession.endSession();        
+        this.irisRtcSession.endSession();
       }
     }
 

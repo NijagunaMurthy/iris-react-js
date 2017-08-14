@@ -4,7 +4,8 @@
       "authManager": "",
       "idManager": "",
       "eventManager": "",
-      "notificationManager": ""
+      "notificationManager": "",
+      "UEStatsServer":""
     },
     "appKey":"",
     "domain":""

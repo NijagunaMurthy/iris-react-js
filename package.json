@@ -1,6 +1,6 @@
 {
   "name": "iris-react-sdk",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "React version of Iris JS SDK",
   "license": "MIT",
   "main": "dist/index.js",
@@ -22,7 +22,7 @@
     ]
   },
   "dependencies": {
-    "iris-js-sdk": "^3.3.6",
+    "iris-js-sdk": "^3.3.7",
     "prop-types": "^15.5.10",
     "react": "^15.6.1",
     "react-dom": "^15.6.1"
