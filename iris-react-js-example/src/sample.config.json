@@ -8,5 +8,6 @@
     "UEStatsServer":""
   },
   "appKey":"",
+  "appSecret":"",
   "domain":""
 }
