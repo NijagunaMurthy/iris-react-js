@@ -1,12 +1,12 @@
 {
-    "urls" : {
-      "appServer": "",
-      "authManager": "",
-      "idManager": "",
-      "eventManager": "",
-      "notificationManager": "",
-      "UEStatsServer":""
-    },
-    "appKey":"",
-    "domain":""
+  "urls" : {
+    "appServer": "",
+    "authManager": "",
+    "idManager": "",
+    "eventManager": "",
+    "notificationManager": "",
+    "UEStatsServer":""
+  },
+  "appKey":"",
+  "domain":""
 }

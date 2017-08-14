@@ -77,7 +77,6 @@ class IrisRoomContainer extends Component {
 
 
   createNewIrisSession(){
-
     // Create a new Iris Rtc Session object
     this.irisRtcSession = new IrisRtcSession();
 
@@ -236,20 +235,6 @@ class IrisRoomContainer extends Component {
     this.irisRtcStream.createStream(streamConfig);
   }
 
-  // Function end the session
-  _endSession() {
-    // End the session
-    if(this.irisRtcSession.config){
-      this.irisRtcSession.endSession();
-    }
-
-    // Stop the media stream for non chat sessions
-    if (this.localStream) {
-      this.irisRtcStream.stopMediaStream(this.localStream);
-      this.localStream = null;
-    }
-  }
-
   _onLocalStream(stream) {
     console.log("IrisRoomContainer :: _onLocalStream");
     this.localStream = stream;
@@ -276,6 +261,20 @@ class IrisRoomContainer extends Component {
     }
 
     // }, 1000);
+  }
+
+  // Function end the session
+  _endSession() {
+    // End the session
+    if(this.irisRtcSession.config){
+      this.irisRtcSession.endSession();
+    }
+
+    // Stop the media stream for non chat sessions
+    if (this.localStream) {
+      this.irisRtcStream.stopMediaStream(this.localStream);
+      this.localStream = null;
+    }
   }
 
   _onStreamStopped() {
