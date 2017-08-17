@@ -10,7 +10,6 @@ import './App.css';
 import config from './config.json'
 
 var encodedKey = window.btoa(config.appKey + ":" + config.appSecret);
-console.log("Encoded App key : "+encodedKey );
 
 if(!IrisRoomContainer || !IrisRtcSdk){
   console.error("iris-react-sdk is not imported");
@@ -25,7 +24,6 @@ class App extends Component {
       token: '',
       routingId:Math.random().toString(36).substr(2, 20) + '@' + config.domain,
       Type:'chat',
-      roomName:'testroom',
       mount : false,
       Config:{
         useBridge : true,
@@ -43,14 +41,13 @@ class App extends Component {
       open: false,
       numChildren:0
     }
+    this.routingId=Math.random().toString(36).substr(2, 20) + '@' + config.domain,
 
-    this.room = "";
+    this.roomName = "";
     this.emailId="";
     this.password="";
     this.toUser = "";
 
-    this.makeIrisConnection = this.makeIrisConnection.bind(this);
-    this.getRoomId = this.getRoomId.bind(this);
     this.onLocalStream = this.onLocalStream.bind(this);
     this.onRemoteStream = this.onRemoteStream.bind(this);
     this.onChatMessage = this.onChatMessage.bind(this);
@@ -58,23 +55,19 @@ class App extends Component {
     this.onTextChange = this.onTextChange.bind(this);
     this.sendChatMessage = this.sendChatMessage.bind(this);
     this.onChatMsgChange = this.onChatMsgChange.bind(this);
-    this.handleToggle = this.handleToggle.bind(this);
-    this.handleClose = this.handleClose.bind(this);
-    this.updateToVideo = this.updateToVideo.bind(this);
+    this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
 
+    this.makeIrisConnection = this.makeIrisConnection.bind(this);
+    this.getRoomId = this.getRoomId.bind(this);
     this.onEmailId = this.onEmailId.bind(this);
     this.onPassword = this.onPassword.bind(this);
     this.onJoin = this.onJoin.bind(this);
     this.onJoinChat = this.onJoinChat.bind(this);
     this.onJoinVideo = this.onJoinVideo.bind(this);
     this.onLogin = this.onLogin.bind(this);
+    this.updateToVideo = this.updateToVideo.bind(this);
 
-    this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
   }
-
-  handleToggle = () => this.setState({open: !this.state.open});
-
-  handleClose = () => this.setState({open: false});
 
   componentDidMount(){
     // this.makeIrisConnection();
@@ -82,6 +75,7 @@ class App extends Component {
 
 
   makeIrisConnection(anonymous, type){
+    var self = this;
     if(anonymous){
       fetch('https://' + config.urls.authManager + '/v1/login/anonymous/', {
         method: 'POST',
@@ -108,7 +102,7 @@ class App extends Component {
           token: responseData.Token
         });
         IrisRtcSdk.updateConfig(config);
-        IrisRtcSdk.connect(this.state.token, this.routingId, config.urls.eventManager);
+        IrisRtcSdk.connect(self.state.token, self.state.routingId, config.urls.eventManager);
       })
       .catch(function (err) {
         console.log(' Anonymous login returned an error  ' + err);
@@ -117,7 +111,6 @@ class App extends Component {
       IrisRtcSdk.updateConfig(config);
       IrisRtcSdk.connect(this.state.token, this.routingId, config.urls.eventManager);
     }
-
 
     IrisRtcSdk.onConnected = () => {
       console.log("IrisRtcSdk :: App :: Iris connection successful");
@@ -145,7 +138,8 @@ class App extends Component {
   }
 
   getRoomId(event, type){
-    fetch("https://"+ config.urls.eventManager + "/v1/createroom/room/"+ this.room, {
+    var self = this;
+    fetch("https://"+ config.urls.eventManager + "/v1/createroom/room/"+ this.roomName, {
       method : "PUT",
       headers : {
         "Authorization": "Bearer " + this.state.token,
@@ -169,10 +163,15 @@ class App extends Component {
     })
     .then((response) => {
       console.log(' anonymous createroom returned response ' + JSON.stringify(response));
+      console.log("Rout "+self.state.routingId);
+      var conf = this.state.Config;
+      conf.routingId = self.state.routingId,
+
       this.setState({
         RoomId:response.room_id,
         Type: type ? type : "chat",
-        roomName:this.room,
+        routingId:self.state.routingId,
+        Config:conf,
         inCall:true,
         remoteStreamUrl : "",
         localStreamUrl : ""
@@ -233,9 +232,7 @@ class App extends Component {
         "Content-Type": "application/json",
       }
       console.log("headers : "+JSON.stringify(headers));
-
       console.log("Participants : "+JSON.stringify({participants: participants}));
-
 
       // Get roomId
       fetch("https://"+ config.urls.eventManager + "/v1/createroom/participants", {
@@ -332,7 +329,7 @@ class App extends Component {
 
   onTextChange(event, string){
     if(!this.state.userLogin){
-      this.room = string
+      this.roomName = string
     }else {
       this.toUser = string;
     }
@@ -358,10 +355,12 @@ class App extends Component {
 
   onJoin(event, type){
 
-    if(this.state.connected){
+    if(this.state.connected && !this.anonymous){
       this.getRoomIdWithParticipants(event, type);
-    }else if(this.room){
-      this.anonymous = this.room ? true : false;
+    }else if(this.anonymous){
+      this.getRoomId(event, type);
+    }else if(this.roomName){
+      this.anonymous = this.roomName ? true : false;
       this.makeIrisConnection(this.anonymous, type);
     }else if(this.emailId && this.password){
 
@@ -380,7 +379,7 @@ class App extends Component {
       }
 
       console.log("headers :: "+ JSON.stringify(headers));
-      console.log("body :: "+JSON.stringify(body));
+      // console.log("body :: "+JSON.stringify(body));
 
 
       fetch("https://"+ config.urls.authManager + "/v1/login/", {
@@ -530,7 +529,7 @@ class App extends Component {
           onClick={this.onJoinChat}
           />
 
-        {this.state.connected ? (
+        {(this.state.connected && !this.state.inCall) ? (
           <RaisedButton
             style={{top:'150', margin:'12'}}
             label="Video Call"
@@ -556,8 +555,6 @@ class App extends Component {
             />
         </div>
       ) : null}
-
-
 
       {!this.state.connected ? (
         <RaisedButton
