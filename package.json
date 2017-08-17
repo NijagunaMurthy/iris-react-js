@@ -1,6 +1,6 @@
 {
   "name": "iris-react-sdk",
-  "version": "1.0.8",
+  "version": "1.0.10",
   "description": "React version of Iris JS SDK",
   "license": "MIT",
   "main": "dist/index.js",
