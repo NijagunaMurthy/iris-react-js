@@ -27,7 +27,7 @@ class App extends Component {
       mount : false,
       Config:{
         useBridge : true,
-        anonymous:true,
+        sessionType:'create',
         resolution:'640',
         routingId:this.routingId,
         videoCodec:'vp8',
@@ -127,10 +127,13 @@ class App extends Component {
 
       // onNotification Received join the call
       if(notificationInfo.type == "notify"){
+        var conf = this.state.Config;
+        conf.sessionType = "join";
         this.setState({
           NotificationPayload : notificationInfo,
           Type :notificationInfo.userdata.notification.type,
-          RoomId:notificationInfo.roomId
+          RoomId:notificationInfo.roomId,
+          Config:conf
         })
       }
       console.log("App:: Notification Received :: ", JSON.stringify(notificationInfo));
@@ -293,7 +296,14 @@ class App extends Component {
 
   updateToVideo(){
     if(this.state.RoomId){
-      this.setState({Type:'video'})
+      let conf = this.state.Config;
+      if(this.anonymous){
+        conf.sessionType = "";
+      }
+      this.setState({
+        Type:'video',
+        Config:conf
+      });
     }else{
       this.getRoomId('video');
     }
