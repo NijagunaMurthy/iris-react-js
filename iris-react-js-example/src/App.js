@@ -540,6 +540,12 @@ class App extends Component {
 
     if(type == "chat"){
 
+      // NO notification is received if other participan downgrades to chat
+      // So need to handle downagrade here
+
+      // Need to handle stopping media stream, removing video tiles and
+      // downgrading session to chat as other partici wants to do chat
+
       //Stop the localStream
       this.refs.room.stopMediaStream();
 
@@ -550,9 +556,8 @@ class App extends Component {
       });
 
     }else if (type == "video") {
-      // this.setState({
-      //   Type:"video",
-      // });
+      // No need handle anyhting as there will be a notification received,
+      // If other part upgrades from chat to video session
     }
   }
 
