@@ -301,8 +301,11 @@ class App extends Component {
   updateToVideo(){
     if(this.state.RoomId){
       let conf = this.state.Config;
+
       if(this.anonymous){
         conf.sessionType = "";
+      }else {
+        conf.sessionType = "create";
       }
       var userData = JSON.stringify({
         "data": {
@@ -376,6 +379,7 @@ class App extends Component {
 
     this.setState({
       localStreamUrl:"",
+      remoteStreamUrl:"",
     })
   }
 
@@ -388,14 +392,15 @@ class App extends Component {
     if(this.state.connected && !this.anonymous){
 
       if(this.state.inCall){
+        let conf = this.state.Config;
+        conf.sessionType = "create";
         this.setState({
-          Type : type
+          Type : type,
+          Config:conf
         });
       }else{
         this.getRoomIdWithParticipants(event, type);
       }
-
-
     }else if(this.anonymous){
       this.getRoomId(event, type);
     }else if(this.roomName){
@@ -532,10 +537,22 @@ class App extends Component {
 
   onSessionTypeChange(participantJid, type){
     console.log("App :: onSessionTypeChange");
-    if(type == "groupchat"){
+
+    if(type == "chat"){
+
+      //Stop the localStream
+      this.refs.room.stopMediaStream();
+
       this.setState({
-        remoteStreamUrl:""
-      })
+        localStreamUrl:"",
+        remoteStreamUrl:"",
+        Type:"chat",
+      });
+
+    }else if (type == "video") {
+      // this.setState({
+      //   Type:"video",
+      // });
     }
   }
 

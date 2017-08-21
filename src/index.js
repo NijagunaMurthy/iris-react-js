@@ -68,6 +68,7 @@ class IrisRoomContainer extends Component {
     this.createNewIrisSession = this.createNewIrisSession.bind(this);
     this._endSession = this._endSession.bind(this);
     this._stopMediaStream = this._stopMediaStream.bind(this);
+    this.stopMediaStream = this.stopMediaStream.bind(this);
     this.syncMessages = this.syncMessages.bind(this);
 
     this.sendChatMessage = this.sendChatMessage.bind(this);
@@ -340,6 +341,10 @@ class IrisRoomContainer extends Component {
       this.irisRtcStream.stopMediaStream(this.localStream);
       this.localStream = null;
     }
+  }
+
+  stopMediaStream(){
+    this._stopMediaStream();
   }
 
   // Function end the session
