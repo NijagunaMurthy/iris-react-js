@@ -124,6 +124,7 @@ class IrisRoomContainer extends Component {
     this.irisRtcSession.onError = this._onError.bind(this);
     this.irisRtcSession.onEvent = this._onEvent.bind(this);
     this.irisRtcSession.onDominantSpeakerChanged = this._onDominantSpeakerChanged.bind(this);
+    this.irisRtcSession.onSessionTypeChange = this._onSessionTypeChange.bind(this);
   }
 
 
@@ -469,6 +470,13 @@ class IrisRoomContainer extends Component {
     console.log("IrisRoomContainer :: _onDominantSpeakerChanged :: participantJid : " + participantJid);
     if(this.props.onDominantSpeakerChanged){
       this.props.onDominantSpeakerChanged(participantJid);
+    }
+  }
+
+  _onSessionTypeChange(participantJid, type){
+    console.log("IrisRoomContainer :: _onSessionTypeChange :: participantJid : " + participantJid + " type : "+type);
+    if(this.props.onSessionTypeChange){
+      this.props.onSessionTypeChange(participantJid, type);
     }
   }
 

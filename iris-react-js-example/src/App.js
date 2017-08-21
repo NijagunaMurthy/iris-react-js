@@ -10,6 +10,7 @@ import './App.css';
 import config from './config.json'
 
 var encodedKey = window.btoa(config.appKey + ":" + config.appSecret);
+console.log("encodedKey "+encodedKey);
 
 if(!IrisRoomContainer || !IrisRtcSdk){
   console.error("iris-react-sdk is not imported");
@@ -32,7 +33,8 @@ class App extends Component {
         routingId:this.routingId,
         videoCodec:'vp8',
         connected:false,
-        userLogin:false
+        userLogin:false,
+        logLevel:3
       },
       NotificationPayload:"",
       messages : [],
@@ -56,6 +58,8 @@ class App extends Component {
     this.sendChatMessage = this.sendChatMessage.bind(this);
     this.onChatMsgChange = this.onChatMsgChange.bind(this);
     this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
+    this.onSessionTypeChange = this.onSessionTypeChange.bind(this);
+    this.onSessionParticipantJoined = this.onSessionParticipantJoined.bind(this);
 
     this.makeIrisConnection = this.makeIrisConnection.bind(this);
     this.getRoomId = this.getRoomId.bind(this);
@@ -126,7 +130,7 @@ class App extends Component {
     IrisRtcSdk.onNotification = (notificationInfo) => {
 
       // onNotification Received join the call
-      if(notificationInfo.type == "notify"){
+      if(notificationInfo.type == "notify" || notificationInfo.type == "chat"){
         var conf = this.state.Config;
         conf.sessionType = "join";
         this.setState({
@@ -300,6 +304,17 @@ class App extends Component {
       if(this.anonymous){
         conf.sessionType = "";
       }
+      var userData = JSON.stringify({
+        "data": {
+          "cid": this.emailId,
+          "cname": this.emailId
+        },
+        "notification": {
+          "topic": config.domain + "/" + "video",
+          "type": "video"
+        }
+      });
+      conf.userData = userData;
       this.setState({
         Type:'video',
         Config:conf
@@ -356,7 +371,12 @@ class App extends Component {
   }
 
   onJoinChat(event){
+
     this.onJoin(event, "chat");
+
+    this.setState({
+      localStreamUrl:"",
+    })
   }
 
   onLogin(event){
@@ -366,7 +386,16 @@ class App extends Component {
   onJoin(event, type){
 
     if(this.state.connected && !this.anonymous){
-      this.getRoomIdWithParticipants(event, type);
+
+      if(this.state.inCall){
+        this.setState({
+          Type : type
+        });
+      }else{
+        this.getRoomIdWithParticipants(event, type);
+      }
+
+
     }else if(this.anonymous){
       this.getRoomId(event, type);
     }else if(this.roomName){
@@ -419,6 +448,7 @@ class App extends Component {
         this.setState({
           token:irisToken
         })
+
 
         // Get Identities -
         fetch("https://"+ config.urls.idManager + "/v1/allidentities", {
@@ -498,6 +528,24 @@ class App extends Component {
     if(closeSession){
       // this.refs.room.endSession();
     }
+  }
+
+  onSessionTypeChange(participantJid, type){
+    console.log("App :: onSessionTypeChange");
+    if(type == "groupchat"){
+      this.setState({
+        remoteStreamUrl:""
+      })
+    }
+  }
+
+  onSessionParticipantJoined(){
+    console.log("App :: onSessionParticipantJoined");
+
+    this.setState({
+      inCall : true
+    });
+
   }
 
   onChatMessage(chatPayload){
@@ -598,6 +646,8 @@ class App extends Component {
         onJoined={this.onJoined}
         onEventHistory={this.onEventHistory}
         onSessionParticipantLeft={this.onSessionParticipantLeft}
+        onSessionTypeChange={this.onSessionTypeChange}
+        onSessionParticipantJoined={this.onSessionParticipantJoined}
         />
 
       <div id='localStreamDiv' >
