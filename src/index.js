@@ -204,7 +204,7 @@ class IrisRoomContainer extends Component {
   // Called when there is a change in props
   componentWillReceiveProps(nextProps) {
 
-    console.log(" IrisRoomContainer::componentWillReceiveProps ");
+    console.log(" IrisRoomContainer::componentWillReceiveProps :: start :: nextProps "+JSON.stringify(nextProps));
 
     var self = this;
 
@@ -221,21 +221,33 @@ class IrisRoomContainer extends Component {
 
     if (this.props.RoomId && !nextProps.RoomId) {
 
+      console.log("IrisRoomContainer :: RoomId is set to null - ending the session");
+
       this._endSession();
 
     } else if (this.props.RoomId === nextProps.RoomId) {
+
+      console.log("IrisRoomContainer :: RoomId is same - checking for Type change");
 
       // If RoomId is same and call Type has changed end the old session
       // and create new session with latest Type
       if (this.props.Type !== nextProps.Type) {
 
+        console.log("IrisRoomContainer :: Change in the session Type is detected "+this.props.Type + " --> " +nextProps.Type);
+
         // Stop the media stream and end the session
         this._stopMediaStream();
 
         if (nextProps.Type === 'chat') {
+
+          console.log("IrisRoomContainer :: downgradeToChat "+JSON.stringify(config) +
+          " notify :: "+JSON.stringify(nextProps.NotificationPayload));
+
           this.irisRtcSession.downgradeToChat(config, nextProps.NotificationPayload);
 
         } else if (nextProps.Type === 'video') {
+
+          console.log("IrisRoomContainer :: upgradeToVideo ");
 
           var streamConfig = {
             "streamType": nextProps.Type,
@@ -245,10 +257,14 @@ class IrisRoomContainer extends Component {
 
           this.irisRtcStream.createStream(streamConfig).then(function(stream) {
             self.localStream = stream;
+            console.log("IrisRoomContainer :: upgradeToVideo config :: "+JSON.stringify(config) +
+            " notify :: "+JSON.stringify(nextProps.NotificationPayload));
             self.irisRtcSession.upgradeToVideo(stream, config, nextProps.NotificationPayload);
           });
 
         } else if (nextProps.Type === "audio" || nextProps.Type === "pstn") {
+
+          console.log("IrisRoomContainer :: upgradeToAudio ");
 
           var streamConfig = {
             "streamType": "audio",
@@ -260,11 +276,12 @@ class IrisRoomContainer extends Component {
             self.irisRtcSession.upgradeToAudio(stream, config, nextProps.NotificationPayload);
           });
         }
-
       }else {
         // RoomId and Type both are same dont do anything
       }
     } else if (this.props.RoomId !== nextProps.RoomId) {
+
+      console.log("IrisRoomContainer :: Change in RoomId detected "+this.props.RoomId + " --> " +nextProps.RoomId);
 
       // If RoomId is changed end the old session and
       // create new session with latest RoomId from props
@@ -273,6 +290,8 @@ class IrisRoomContainer extends Component {
       this._endSession();
 
       if(nextProps.Type === "video"){
+
+        console.log("IrisRoomContainer :: Video call with RoomId " +nextProps.RoomId);
 
         var streamConfig = {
           "streamType": nextProps.Type,
@@ -285,14 +304,18 @@ class IrisRoomContainer extends Component {
           self.localStream = stream;
 
           if(self.props.NotificationPayload){
+            console.log("IrisRoomContainer :: Joining video call with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
             self.irisRtcSession.joinSession(config, irisRtcConnection, stream, nextProps.NotificationPayload);
           }else{
+            console.log("IrisRoomContainer :: Making video call with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config));
             self.irisRtcSession.createSession(config, irisRtcConnection, stream);
           }
         });
       }
 
       if(nextProps.Type === "audio" || nextProps.Type === "pstn"){
+
+        console.log("IrisRoomContainer :: Audio call with RoomId " +nextProps.RoomId);
 
         var streamConfig = {
           "streamType": "audio",
@@ -305,8 +328,11 @@ class IrisRoomContainer extends Component {
           self.localStream = stream;
 
           if(self.props.NotificationPayload){
+            console.log("IrisRoomContainer :: Joining audio call with RoomId " +
+            nextProps.RoomId + " config : "+JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
             self.irisRtcSession.joinSession(config, irisRtcConnection, stream, nextProps.NotificationPayload);
           }else{
+            console.log("IrisRoomContainer :: Making audio call with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config));
             self.irisRtcSession.createSession(config, irisRtcConnection, stream);
           }
         });
@@ -315,21 +341,29 @@ class IrisRoomContainer extends Component {
       // Create new session with RoomId and Type
       if ((!this.props.Type || this.props.Type === 'chat') && nextProps.Type === 'chat') {
 
+        console.log("IrisRoomContainer :: groupchat with RoomId " +nextProps.RoomId);
+
         this.createNewIrisSession();
 
         if(nextProps.NotificationPayload){
+          console.log("IrisRoomContainer :: Joining groupchat with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
           this.irisRtcSession.joinChatSession(config, irisRtcConnection, nextProps.NotificationPayload)
         }else{
+          console.log("IrisRoomContainer :: Making groupchat with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config));
           this.irisRtcSession.createChatSession(config, irisRtcConnection);
         }
       }
 
     }else if ((this.props.Type != nextProps.Type) || (this.props.RoomId != nextProps.RoomId)) {
+      console.log("IrisRoomContainer :: Change in Type and RoomId" );
+
       if ((this.props.Type == 'chat') && (this.props.RoomId != "")) {
         // End the existing session
         this.irisRtcSession.endSession();
       }
     }
+
+    console.log(" IrisRoomContainer::componentWillReceiveProps :: end");
   }
 
   componentWillUnmount() {
@@ -337,18 +371,22 @@ class IrisRoomContainer extends Component {
   }
 
   _stopMediaStream(){
+
     if(this.irisRtcStream && this.localStream){
+      console.log(" IrisRoomContainer::_stopMediaStream :: "+this.localStream);
       this.irisRtcStream.stopMediaStream(this.localStream);
       this.localStream = null;
     }
   }
 
   stopMediaStream(){
+    console.log(" IrisRoomContainer::stopMediaStream :: "+this.localStream);
     this._stopMediaStream();
   }
 
   // Function end the session
   _endSession() {
+    console.log(" IrisRoomContainer::_endSession");
     // End the session
     if(this.irisRtcSession && this.irisRtcSession.config){
       this.irisRtcSession.endSession();
@@ -361,13 +399,13 @@ class IrisRoomContainer extends Component {
     }
   }
 
-    _onLocalStream(stream) {
-      console.log("IrisRoomContainer :: _onLocalStream");
-      this.localStream = stream;
-      if(this.props.onLocalStream){
-        this.props.onLocalStream(stream);
-      }
+  _onLocalStream(stream) {
+    console.log("IrisRoomContainer :: _onLocalStream");
+    this.localStream = stream;
+    if(this.props.onLocalStream){
+      this.props.onLocalStream(stream);
     }
+  }
 
   _onStreamStopped() {
     console.log("IrisRoomContainer :: _onStreamStopped");
@@ -493,28 +531,89 @@ class IrisRoomContainer extends Component {
   }
 
   endSession(){
+    console.log(" IrisRoomContainer :: endSession");
     if(this.irisRtcSession){
       this.irisRtcSession.endSession();
     }
   }
 
   setDisplayName(name){
+    console.log(" IrisRoomContainer :: setDisplayName");
     if(this.irisRtcSession){
       this.irisRtcSession.setDisplayName(name);
     }
   }
 
   audioMuteToggle(){
+    console.log(" IrisRoomContainer :: audioMuteToggle");
     if(this.irisRtcSession){
       this.irisRtcSession.audioMuteToggle();
     }
   }
 
   videoMuteToggle(){
+    console.log(" IrisRoomContainer :: videoMuteToggle");
     if(this.irisRtcSession){
       this.irisRtcSession.videoMuteToggle();
     }
   }
+
+  // startScreenshare(screenSourceId) {
+  //   console.log("IrisRoomContainer :: startScreenshare");
+  //   const screenShareConfig = {
+  //     constraints: {
+  //       audio: {
+  //         mandatory: {
+  //           chromeMediaSource: "desktop",
+  //           chromeMediaSourceId: screenSourceId
+  //         }
+  //
+  //       },
+  //       video: {
+  //         mandatory: {
+  //           chromeMediaSource: "desktop",
+  //           chromeMediaSourceId: screenSourceId,
+  //           maxWidth: 1920,
+  //           maxHeight: 1080
+  //         },
+  //         optional: [{
+  //           googTemporalLayeredScreencast: true
+  //         }]
+  //       },
+  //     },
+  //     screenShare: true
+  //   };
+  //
+  //   if(this.irisRtcSession && this.irisRtcStream){
+  //     console.log('IrisRoomContainer :: screenShareConfig: ' + JSON.stringify(screenShareConfig));
+  //     this.irisRtcSession.switchStream(this.irisRtcStream, screenShareConfig);
+  //   }
+  // }
+  //
+  // _endScreenshare(streamConfig) {
+  //   console.log('IrisRoomContainer :: ');
+  //
+  //   new Promise((resolve, reject) => {
+  //     const localConnectionList = this.state.localConnectionList;
+  //     if (localConnectionList !== undefined && localConnectionList.length > 0) {
+  //       // replace the current local video with the screenshare (if one exists)
+  //       const screenshareConnection = localConnectionList.pop();
+  //       // stop the tracks so that the browser knows we're done sharing the screen
+  //       // if we don't do this, chrome's screenshare bar won't close
+  //       //screenshareConnection.video.track.stream.getTracks().map((track) => {
+  //       screenshareConnection.getVideoTracks().map(function (track) {
+  //         if (track.stop) {
+  //           track.stop();
+  //         }
+  //       });
+  //       this.setState({ localConnectionList: localConnectionList }, () => resolve());
+  //     }
+  //   })
+  //   .then(() => {
+  //     this.irisRtcSession.switchStream(this.irisRtcStream, streamConfig);
+  //   })
+  //   .catch((error) => console.error('ERROR: ' + error));
+  // }
 
   // Sync chat messages
   syncMessages() {
