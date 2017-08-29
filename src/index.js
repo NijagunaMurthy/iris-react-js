@@ -558,62 +558,46 @@ class IrisRoomContainer extends Component {
     }
   }
 
-  // startScreenshare(screenSourceId) {
-  //   console.log("IrisRoomContainer :: startScreenshare");
-  //   const screenShareConfig = {
-  //     constraints: {
-  //       audio: {
-  //         mandatory: {
-  //           chromeMediaSource: "desktop",
-  //           chromeMediaSourceId: screenSourceId
-  //         }
-  //
-  //       },
-  //       video: {
-  //         mandatory: {
-  //           chromeMediaSource: "desktop",
-  //           chromeMediaSourceId: screenSourceId,
-  //           maxWidth: 1920,
-  //           maxHeight: 1080
-  //         },
-  //         optional: [{
-  //           googTemporalLayeredScreencast: true
-  //         }]
-  //       },
-  //     },
-  //     screenShare: true
-  //   };
-  //
-  //   if(this.irisRtcSession && this.irisRtcStream){
-  //     console.log('IrisRoomContainer :: screenShareConfig: ' + JSON.stringify(screenShareConfig));
-  //     this.irisRtcSession.switchStream(this.irisRtcStream, screenShareConfig);
-  //   }
-  // }
-  //
-  // _endScreenshare(streamConfig) {
-  //   console.log('IrisRoomContainer :: ');
-  //
-  //   new Promise((resolve, reject) => {
-  //     const localConnectionList = this.state.localConnectionList;
-  //     if (localConnectionList !== undefined && localConnectionList.length > 0) {
-  //       // replace the current local video with the screenshare (if one exists)
-  //       const screenshareConnection = localConnectionList.pop();
-  //       // stop the tracks so that the browser knows we're done sharing the screen
-  //       // if we don't do this, chrome's screenshare bar won't close
-  //       //screenshareConnection.video.track.stream.getTracks().map((track) => {
-  //       screenshareConnection.getVideoTracks().map(function (track) {
-  //         if (track.stop) {
-  //           track.stop();
-  //         }
-  //       });
-  //       this.setState({ localConnectionList: localConnectionList }, () => resolve());
-  //     }
-  //   })
-  //   .then(() => {
-  //     this.irisRtcSession.switchStream(this.irisRtcStream, streamConfig);
-  //   })
-  //   .catch((error) => console.error('ERROR: ' + error));
-  // }
+  //Start the screen share
+  startScreenshare(screenShareConfig) {
+    console.log("IrisRoomContainer :: startScreenshare");
+
+    if(!screenShareConfig){
+      console.log("IrisRoomContainer :: startScreenshare :: screenShareConfig is not available creating new config");
+      return;
+    }
+
+    if(screenShareConfig && !screenShareConfig.screenShare)
+      screenShareConfig.screenShare = true;
+
+    console.log("IrisRoomContainer :: startScreenshare :: screenShareConfig "+JSON.stringify(screenShareConfig));
+
+    if(this.irisRtcSession && this.irisRtcStream){
+      console.log('IrisRoomContainer :: startScreenshare :: Calling irisRtcSession.switchStream ');
+      this.irisRtcSession.switchStream(this.irisRtcStream, screenShareConfig);
+    }
+  }
+
+  // Ending the screen share
+  endScreenshare(streamConfig) {
+
+    console.log('IrisRoomContainer :: endScreenShare');
+
+    if(this.irisRtcSession && this.irisRtcStream){
+      this.irisRtcStream.stopMediaStream(this.localStream);
+
+      if(streamConfig){
+        console.log("IrisRoomContainer :: endScreenshare :: set screenShare flag to false");
+        streamConfig.screenShare = false;
+        console.log("IrisRoomContainer :: endScreenshare :: streamConfig : "+JSON.stringify(streamConfig));
+
+        this.irisRtcSession.switchStream(this.irisRtcStream, streamConfig);
+      }else {
+        console.error('IrisRoomContainer :: endScreenShare :: streamConfig not available');
+
+      }
+    }
+  }
 
   // Sync chat messages
   syncMessages() {

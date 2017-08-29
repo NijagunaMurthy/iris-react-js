@@ -31,36 +31,41 @@ import {IrisRoomContainer, IrisRtcSdk} from 'iris-react-sdk';
 
 2. Using `IrisRoomContainer` to initiate/accept call
 
-```
+```js
+
 return (
-	<IrisRoomContainer
-            ref="room"
-            Type={this.state.Type}
-            RoomId={this.state.RoomId}
-            Config={this.state.Config}
-            NotificationPayload={this.state.NotificationPayload}
-            onLocalStream={this.onLocalStream}
-            onRemoteStream={this.onRemoteStream}
-            onChatMessage={this.onChatMessage}
-            onChatAck={this.onChatAck}
-	    onEventHistory={this.onEventHistory}
-	    onDominantSpeakerChanged={this.onDominantSpeakerChanged}
-	    onSessionEnd={this.onSessionEnd}
-	    onSessionParticipantLeft={this.onSessionParticipantLeft}
-	    />
-	)
+  <IrisRoomContainer
+  ref="room"
+  Type={this.state.Type}
+  RoomId={this.state.RoomId}
+  Config={this.state.Config}
+  NotificationPayload={this.state.NotificationPayload}
+  onLocalStream={this.onLocalStream}
+  onRemoteStream={this.onRemoteStream}
+  onChatMessage={this.onChatMessage}
+  onChatAck={this.onChatAck}
+  onEventHistory={this.onEventHistory}
+  onDominantSpeakerChanged={this.onDominantSpeakerChanged}
+  onSessionEnd={this.onSessionEnd}
+  onSessionParticipantJoined={this.onSessionParticipantJoined}
+  onSessionParticipantLeft={this.onSessionParticipantLeft}
+  onSessionTypeChange={this.onSessionTypeChange}
 
-	...
+  />
+)
 
-	let roomId = response.room_id;
-	let Config = {
-		SessionType: 'outgoing',
-		notificationPayload: ''
-	};
-	this.setState({
-		RoomId:roomId,
-		Config:Config,
-	});
+...
+
+let roomId = response.room_id;
+let Config = {
+  SessionType: 'outgoing',
+  notificationPayload: ''
+};
+this.setState({
+  RoomId:roomId,
+  Config:Config,
+});
+
 ```
 
 ## APIs
@@ -130,6 +135,69 @@ this.refs.room.syncMessages();
 **Params**
 
 * None
+
+</div>
+----
+
+
+### Screen Share API - Start screen share with `startScreenshare`
+
+This API starts sharing the screen. It should be called with `screenShareConfig`
+
+**Example**
+
+```js
+
+var constraints = {
+  audio : false,
+  video : {
+    mandatory: {
+      chromeMediaSource: "desktop",
+      chromeMediaSourceId: response.streamId, // streamId from chrome extension response
+      maxWidth: window.screen.width,
+      maxHeight: window.screen.height,
+      maxFrameRate: 3
+    },
+    optional: []
+  }
+}
+var screenShareConfig = {
+  "constraints": constraints,
+  "screenShare": true
+}
+
+this.refs.room.startScreenshare(screenShareConfig);
+
+```
+**Params**
+
+* `screenShareConfig` **{json}**: Stream config for screen share
+
+</div>
+----
+
+
+### Screen Share API - End screen share  with `endScreenshare`
+
+This API ends sharing the screen. It should be called with `streamConfig` to get revert back to localStream
+
+**Example**
+
+```js
+
+var streamConfig = {
+    "streamType": "video",
+    "resolution": ""
+    "constraints": "",
+    "screenShare": false
+};
+
+this.refs.room.endScreenshare(streamConfig);
+
+```
+**Params**
+
+* `streamConfig` **{json}**: Stream config to revert back from screen to local stream
 
 </div>
 ----

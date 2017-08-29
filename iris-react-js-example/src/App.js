@@ -59,6 +59,7 @@ class App extends Component {
     this.onChatMsgChange = this.onChatMsgChange.bind(this);
     this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
     this.onSessionTypeChange = this.onSessionTypeChange.bind(this);
+    this.onSessionJoined = this.onSessionJoined.bind(this);
     this.onSessionParticipantJoined = this.onSessionParticipantJoined.bind(this);
 
     this.makeIrisConnection = this.makeIrisConnection.bind(this);
@@ -70,6 +71,8 @@ class App extends Component {
     this.onJoinVideo = this.onJoinVideo.bind(this);
     this.onLogin = this.onLogin.bind(this);
     this.updateToVideo = this.updateToVideo.bind(this);
+    this.screenShare = this.screenShare.bind(this);
+    this.endShare = this.endShare.bind(this);
 
   }
 
@@ -335,6 +338,56 @@ class App extends Component {
     }
   }
 
+  screenShare(){
+    var self = this;
+    window.chrome.runtime.sendMessage(
+      'ofekpehdpllklhgnipjhnoagibfdicjb', {
+        // getVersion: true,
+        getStream: true,
+        sources: ['screen', 'window']
+      },
+      response => {
+        if (!response || !response.streamId) {
+          // possibly re-wraping error message to make code consistent
+          const lastError = window.chrome.runtime.lastError;
+          return;
+        } else {
+
+          var constraints = {
+            audio : false,
+            video : {
+              mandatory: {
+                chromeMediaSource: "desktop",
+                chromeMediaSourceId: response.streamId,
+                maxWidth: window.screen.width,
+                maxHeight: window.screen.height,
+                maxFrameRate: 3
+              },
+              optional: []
+            }
+          }
+          var streamConfig = {
+            "constraints": constraints,
+            screenShare: true
+          }
+
+          self.refs.room.startScreenshare(streamConfig);
+        }
+
+      }
+    );
+  }
+
+  endShare(){
+    var streamConfig = {
+        "streamType": this.state.Type,
+        "resolution": this.state.Config.resolution,
+        "constraints": this.state.Config.constraints,
+        "screenShare": false
+    };
+    this.refs.room.endScreenshare(streamConfig);
+  }
+
   onLocalStream(stream){
     console.log("App:: Received Local Stream : ", stream);
     if(stream){
@@ -561,13 +614,17 @@ class App extends Component {
     }
   }
 
-  onSessionParticipantJoined(){
+  onSessionParticipantJoined(roomId, sessionId, participantJid){
     console.log("App :: onSessionParticipantJoined");
-
     this.setState({
       inCall : true
     });
+  }
 
+  onSessionJoined(roomId, sessionId, myJid){
+    this.setState({
+      inCall : true
+    });
   }
 
   onChatMessage(chatPayload){
@@ -655,6 +712,24 @@ class App extends Component {
       ) : null}
 
 
+      {this.state.inCall ? (
+        <RaisedButton
+          style={{margin:'12'}}
+          label="Screen Share"
+          primary={true}
+          onClick={this.screenShare}
+          />
+      ) : null}
+
+      {this.state.inCall ? (
+        <RaisedButton
+          style={{margin:'12'}}
+          label="End Screen Share"
+          primary={true}
+          onClick={this.endShare}
+          />
+      ) : null}
+
       <IrisRoomContainer
         ref="room"
         Type={this.state.Type}
@@ -669,6 +744,7 @@ class App extends Component {
         onEventHistory={this.onEventHistory}
         onSessionParticipantLeft={this.onSessionParticipantLeft}
         onSessionTypeChange={this.onSessionTypeChange}
+        onSessionJoined={this.onSessionJoined}
         onSessionParticipantJoined={this.onSessionParticipantJoined}
         />
 
