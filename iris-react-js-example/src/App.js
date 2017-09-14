@@ -2,7 +2,6 @@ import React, { Component } from 'react';
 
 import {IrisRoomContainer, IrisRtcSdk} from 'iris-react-sdk';
 
-import AppBar from 'material-ui/AppBar';
 import RaisedButton from 'material-ui/RaisedButton'
 import TextField from 'material-ui/TextField';
 
@@ -15,7 +14,6 @@ console.log("encodedKey "+encodedKey);
 if(!IrisRoomContainer || !IrisRtcSdk){
   console.error("iris-react-sdk is not imported");
 }
-
 
 class App extends Component {
 
@@ -34,7 +32,8 @@ class App extends Component {
         videoCodec:'vp8',
         connected:false,
         userLogin:false,
-        logLevel:3
+        logLevel:3,
+        irisToken:""
       },
       NotificationPayload:"",
       messages : [],
@@ -74,6 +73,10 @@ class App extends Component {
     this.screenShare = this.screenShare.bind(this);
     this.endShare = this.endShare.bind(this);
 
+
+    IrisRtcSdk.getMediaDevices().then(function(devices) {
+      console.log("IrisRoomContainer :: Available Media Devices ", devices);
+    });
   }
 
   componentDidMount(){
@@ -105,9 +108,16 @@ class App extends Component {
       }).then(response => response.json())
       .then((responseData) => {
         console.log(' Anonymous login returned response ' + JSON.stringify(responseData));
+
+        var irisToken = responseData.Token;
+        var conf = this.state.Config;
+        conf.irisToken = irisToken
+
         this.setState({
-          token: responseData.Token
-        });
+          token:irisToken,
+          Config:conf
+        })
+
         IrisRtcSdk.updateConfig(config);
         IrisRtcSdk.connect(self.state.token, self.state.routingId, config.urls.eventManager);
       })
@@ -402,7 +412,7 @@ class App extends Component {
   }
 
   sendChatMessage(id, msg){
-    this.refs.room.sendChatMessage(Math.random().toString(36).substr(2, 20), this.msg);
+    this.refs.room.sendChatMessage(this.state.RoomId, Math.random().toString(36).substr(2, 20), this.msg);
     // this.refs.room.sendChatMessage(id, msg);
     // this.mgs = "";
     // this.setState({message:""})
@@ -503,8 +513,12 @@ class App extends Component {
 
         var irisToken = response.Token;
 
+        var conf = this.state.Config;
+        conf.irisToken = irisToken
+
         this.setState({
-          token:irisToken
+          token:irisToken,
+          Config:conf
         })
 
 
@@ -562,7 +576,7 @@ class App extends Component {
   }
 
 
-  onRemoteStream(stream){
+  onRemoteStream(roomId, stream){
     console.log("App:: Received Remote Stream : ", stream);
     if(stream){
 
@@ -582,13 +596,13 @@ class App extends Component {
     }
   }
 
-  onSessionParticipantLeft(roomId, sessionId, participantJid, closeSession){
+  onSessionParticipantLeft(roomId, participantJid, closeSession){
     if(closeSession){
       // this.refs.room.endSession();
     }
   }
 
-  onSessionTypeChange(participantJid, type){
+  onSessionTypeChange(roomId, participantJid, type){
     console.log("App :: onSessionTypeChange");
 
     if(type == "chat"){
@@ -614,27 +628,27 @@ class App extends Component {
     }
   }
 
-  onSessionParticipantJoined(roomId, sessionId, participantJid){
+  onSessionParticipantJoined(roomId, participantJid){
     console.log("App :: onSessionParticipantJoined");
     this.setState({
       inCall : true
     });
   }
 
-  onSessionJoined(roomId, sessionId, myJid){
+  onSessionJoined(roomId, myJid){
     this.setState({
       inCall : true
     });
   }
 
-  onChatMessage(chatPayload){
+  onChatMessage(roomId, chatPayload){
     console.log("Chat Message Received ", JSON.stringify(chatPayload));
     var newMessages = this.state.messages;
     newMessages.push(chatPayload.message)
     this.setState({messages : newMessages});
   }
 
-  onChatAck(ackPayload){
+  onChatAck(roomId, ackPayload){
     console.log("Chat Message ACK Received ", JSON.stringify(ackPayload));
   }
 
@@ -649,10 +663,6 @@ class App extends Component {
     return (
       <div className="App">
 
-        <AppBar
-          title="Iris React Example"
-          iconClassNameRight="muidocs-icon-navigation-expand-more"
-          />
         <TextField
           className={(this.state.inCall  && this.anonymous) ? "hidden" : "chat" }
           hintText={this.state.connected ? "Email Id" : "Room Name"}

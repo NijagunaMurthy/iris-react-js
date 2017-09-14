@@ -58,6 +58,13 @@ return (
 
 let roomId = response.room_id;
 let Config = {
+  irisToken: "",
+  routingID: "",
+  toTN: "",
+  fromTN: "",
+  toRoutingId: "",
+  traceId: "",
+  userData: "",
   SessionType: 'outgoing',
   notificationPayload: ''
 };
@@ -105,13 +112,29 @@ IrisRtcSdk.disconnect();
 </div>
 ----
 
+### Media devices - Get a list of meida devices with `getMediaDevices`
+Returns a promise with list of available audio and video devies
+
+**Example**
+
+```js
+import IrisRtcSdk from 'iris-react-sdk';
+IrisRtcSdk.getMediaDevices();
+```
+**Params**
+
+* None
+
+</div>
+----
+
 
 ### Message APIs - send message using `sendChatMessage`
 
 **Example**
 
 ```js
-this.refs.room.sendChatMessage(id, message);
+this.refs.room.sendChatMessage(roomId, id, message);
 ```
 **Params**
 

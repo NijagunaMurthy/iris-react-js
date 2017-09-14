@@ -56,6 +56,10 @@ if(IrisRtcConfig){
   }
 }
 
+if(IrisRtcStream){
+  IrisRtcSdk.getMediaDevices = IrisRtcStream.getMediaDevices;
+}
+
 /*
 ** Create a room container
 */
@@ -156,6 +160,7 @@ class IrisRoomContainer extends Component {
           let config = self.props.Config;
           config.roomId = self.props.RoomId;
           config.type = self.props.Type;
+          config.irisToken = self.props.Config.irisToken;
 
           if(self.props.NotificationPayload){
             self.irisRtcSession.joinSession(config, irisRtcConnection, stream, self.props.NotificationPayload);
@@ -177,6 +182,7 @@ class IrisRoomContainer extends Component {
           let config = self.props.Config;
           config.roomId = self.props.RoomId;
           config.type = self.props.Type;
+          config.irisToken = self.props.Config.irisToken;
 
           if(self.props.NotificationPayload){
             self.irisRtcSession.joinSession(config, irisRtcConnection, stream, self.props.NotificationPayload);
@@ -189,6 +195,7 @@ class IrisRoomContainer extends Component {
         let config = this.props.Config;
         config.roomId = this.props.RoomId;
         config.type = this.props.Type;
+        config.irisToken = self.props.Config.irisToken;
 
         if(this.props.NotificationPayload){
           this.irisRtcSession.joinChatSession(config, irisRtcConnection, this.props.NotificationPayload)
@@ -216,6 +223,7 @@ class IrisRoomContainer extends Component {
     let config = nextProps.Config;
     config.roomId = nextProps.RoomId;
     config.type = nextProps.Type;
+    config.irisToken = nextProps.Config.irisToken;
 
     console.log("IrisRoomContainer :: componentWillReceiveProps :: config : "+JSON.stringify(config));
 
@@ -389,7 +397,7 @@ class IrisRoomContainer extends Component {
     console.log(" IrisRoomContainer::_endSession");
     // End the session
     if(this.irisRtcSession && this.irisRtcSession.config){
-      this.irisRtcSession.endSession();
+      this.irisRtcSession.endSession(this.props.RoomId);
     }
 
     // Stop the media stream for non chat sessions
@@ -414,10 +422,10 @@ class IrisRoomContainer extends Component {
     }
   }
 
-  _onRemoteStream(stream) {
-    console.log("IrisRoomContainer :: _onRemoteStream");
+  _onRemoteStream(roomId, stream) {
+    console.log("IrisRoomContainer :: _onRemoteStream :: roomId : "+roomId);
     if(this.props.onRemoteStream){
-      this.props.onRemoteStream(stream);
+      this.props.onRemoteStream(roomId, stream);
     }
   }
 
@@ -427,134 +435,141 @@ class IrisRoomContainer extends Component {
       this.props.onSessionCreated(roomId);
     }
   }
-  _onSessionJoined(roomId, sessionId, myJid) {
+  _onSessionJoined(roomId, myJid) {
     console.log("IrisRoomContainer :: _onSessionJoined " + roomId);
     if(this.props.onSessionJoined){
-      this.props.onSessionJoined(roomId, sessionId, myJid);
+      this.props.onSessionJoined(roomId, myJid);
     }
   }
-  _onSessionConnected(sessionId) {
-    console.log("IrisRoomContainer :: _onSessionConnected " + sessionId);
+  _onSessionConnected(roomId) {
+    console.log("IrisRoomContainer :: _onSessionConnected " + roomId);
     if(this.props.onSessionConnected){
-      this.props.onSessionConnected(sessionId);
+      this.props.onSessionConnected(roomId);
     }
   }
-  _onSessionParticipantJoined(roomId, sessionId, participantJid) {
+  _onSessionParticipantJoined(roomId, participantJid) {
     console.log("IrisRoomContainer :: _onSessionParticipantJoined :: participantJid : " + participantJid);
     if(this.props.onSessionParticipantJoined){
-      this.props.onSessionParticipantJoined(roomId, sessionId, participantJid);
+      this.props.onSessionParticipantJoined(roomId, participantJid);
     }
   }
 
-  _onSessionParticipantLeft(roomId, sessionId, participantJid, closeSession) {
+  _onSessionParticipantLeft(roomId, participantJid, closeSession) {
     console.log("IrisRoomContainer :: _onSessionParticipantLeft :: participantJid : " + participantJid);
     if(this.props.onSessionParticipantLeft){
-      this.props.onSessionParticipantLeft(roomId, sessionId, participantJid, closeSession);
+      this.props.onSessionParticipantLeft(roomId, participantJid, closeSession);
     }
   }
 
-  _onSessionEnd(sessionId) {
-    console.log("IrisRoomContainer :: _onSessionEnd " + sessionId);
+  _onSessionEnd(roomId) {
+    console.log("IrisRoomContainer :: _onSessionEnd " + roomId);
     if(this.props.onSessionEnd){
-      this.props.onSessionEnd(sessionId);
+      this.props.onSessionEnd(roomId);
     }
   }
 
-  _onChatMessage(chatMsgPayload) {
+  _onChatMessage(roomId, chatMsgPayload) {
     console.log("IrisRoomContainer :: _onChatMessage " + JSON.stringify(chatMsgPayload));
     if(this.props.onChatMessage){
-      this.props.onChatMessage(chatMsgPayload);
+      this.props.onChatMessage(roomId, chatMsgPayload);
     }
   }
 
-  _onChatAck(chatAckPayload) {
+  _onChatAck(roomId, chatAckPayload) {
     console.log("IrisRoomContainer :: _onChatAck " + JSON.stringify(chatAckPayload));
     if (this.props.onChatAck) {
-      this.props.onChatAck(chatAckPayload);
+      this.props.onChatAck(roomId, chatAckPayload);
     }
   }
 
-  _onParticipantVideoMuted(id, muted) {
+  _onParticipantVideoMuted(roomId, id, muted) {
     console.log("IrisRoomContainer :: _onParticipantVideoMuted " + id + " Muted "+muted);
     if(this.props.onParticipantVideoMuted){
-      this.props.onParticipantVideoMuted(id, muted);
+      this.props.onParticipantVideoMuted(roomId, id, muted);
     }
   }
 
-  _onParticipantAudioMuted(id, muted) {
+  _onParticipantAudioMuted(roomId, id, muted) {
     console.log("IrisRoomContainer :: _onParticipantAudioMuted " + id + " Muted "+muted);
     if(this.props.onParticipantAudioMuted){
-      this.props.onParticipantAudioMuted(id, muted);
+      this.props.onParticipantAudioMuted(roomId, id, muted);
     }
   }
 
-  _onUserProfileChange(id, obj) {
+  _onUserProfileChange(roomId, id, obj) {
     console.log("IrisRoomContainer :: _onUserProfileChange " + id + " obj "+ JSON.stringify(obj));
     if(this.props.onUserProfileChange){
-      this.props.onUserProfileChange(id, obj);
+      this.props.onUserProfileChange(roomId, id, obj);
     }
   }
 
-  _onError(error) {
+  _onError(roomId, error) {
     console.log("IrisRoomContainer :: _onUserProfileChange " + error);
     if(this.props.onError){
       this.props.onError(error);
     }
   }
 
-  _onEvent(event) {
+  _onEvent(roomId, event) {
     console.log("IrisRoomContainer :: onEvent :: " + JSON.stringify(event));
     if(this.props.onEvent){
       this.props.onEvent(event);
     }
   }
 
-  _onDominantSpeakerChanged(participantJid) {
+  _onDominantSpeakerChanged(roomId, participantJid) {
     console.log("IrisRoomContainer :: _onDominantSpeakerChanged :: participantJid : " + participantJid);
     if(this.props.onDominantSpeakerChanged){
       this.props.onDominantSpeakerChanged(participantJid);
     }
   }
 
-  _onSessionTypeChange(participantJid, type){
+  _onSessionTypeChange(roomId, participantJid, type){
     console.log("IrisRoomContainer :: _onSessionTypeChange :: participantJid : " + participantJid + " type : "+type);
     if(this.props.onSessionTypeChange){
-      this.props.onSessionTypeChange(participantJid, type);
+      this.props.onSessionTypeChange(roomId, participantJid, type);
     }
   }
 
   // Send chat messages
-  sendChatMessage(id, message) {
+  sendChatMessage(roomId, id, message) {
     if ((this.props.Type == 'chat' || this.props.Type == 'video') && this.props.RoomId != "") {
-      this.irisRtcSession.sendChatMessage(id, message);
+      this.irisRtcSession.sendChatMessage(roomId, id, message);
     }
   }
 
   endSession(){
     console.log(" IrisRoomContainer :: endSession");
     if(this.irisRtcSession){
-      this.irisRtcSession.endSession();
+      this.irisRtcSession.endSession(this.props.RoomId);
     }
   }
 
-  setDisplayName(name){
+  setDisplayName(roomId, name){
     console.log(" IrisRoomContainer :: setDisplayName");
     if(this.irisRtcSession){
-      this.irisRtcSession.setDisplayName(name);
+      this.irisRtcSession.setDisplayName(roomId, name);
     }
   }
 
-  audioMuteToggle(){
+  audioMuteToggle(roomId){
     console.log(" IrisRoomContainer :: audioMuteToggle");
     if(this.irisRtcSession){
-      this.irisRtcSession.audioMuteToggle();
+      this.irisRtcSession.audioMuteToggle(roomId);
     }
   }
 
-  videoMuteToggle(){
+  videoMuteToggle(roomId){
     console.log(" IrisRoomContainer :: videoMuteToggle");
     if(this.irisRtcSession){
-      this.irisRtcSession.videoMuteToggle();
+      this.irisRtcSession.videoMuteToggle(roomId);
+    }
+  }
+
+  pstnHold(roomId, participantJid, value){
+    console.log(" IrisRoomContainer :: pstnHold");
+    if(this.irisRtcSession){
+      this.irisRtcSession.pstnHold(roomId, participantJid, value);
     }
   }
 
@@ -568,13 +583,13 @@ class IrisRoomContainer extends Component {
     }
 
     if(screenShareConfig && !screenShareConfig.screenShare)
-      screenShareConfig.screenShare = true;
+    screenShareConfig.screenShare = true;
 
     console.log("IrisRoomContainer :: startScreenshare :: screenShareConfig "+JSON.stringify(screenShareConfig));
 
     if(this.irisRtcSession && this.irisRtcStream){
       console.log('IrisRoomContainer :: startScreenshare :: Calling irisRtcSession.switchStream ');
-      this.irisRtcSession.switchStream(this.irisRtcStream, screenShareConfig);
+      this.irisRtcSession.switchStream(this.props.RoomId, this.irisRtcStream, screenShareConfig);
     }
   }
 
@@ -591,7 +606,7 @@ class IrisRoomContainer extends Component {
         streamConfig.screenShare = false;
         console.log("IrisRoomContainer :: endScreenshare :: streamConfig : "+JSON.stringify(streamConfig));
 
-        this.irisRtcSession.switchStream(this.irisRtcStream, streamConfig);
+        this.irisRtcSession.switchStream(this.props.RoomId, this.irisRtcStream, streamConfig);
       }else {
         console.error('IrisRoomContainer :: endScreenShare :: streamConfig not available');
 
