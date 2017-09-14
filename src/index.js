@@ -506,7 +506,7 @@ class IrisRoomContainer extends Component {
   _onError(roomId, error) {
     console.log("IrisRoomContainer :: _onUserProfileChange " + error);
     if(this.props.onError){
-      this.props.onError(error);
+      this.props.onError(roomId, error);
     }
   }
 
@@ -520,7 +520,7 @@ class IrisRoomContainer extends Component {
   _onDominantSpeakerChanged(roomId, participantJid) {
     console.log("IrisRoomContainer :: _onDominantSpeakerChanged :: participantJid : " + participantJid);
     if(this.props.onDominantSpeakerChanged){
-      this.props.onDominantSpeakerChanged(participantJid);
+      this.props.onDominantSpeakerChanged(roomId, participantJid);
     }
   }
 
