@@ -136,7 +136,9 @@ class IrisRoomContainer extends Component {
   componentDidMount() {
 
     this.createNewIrisSession();
+
     var self = this;
+
     if (!this.props.Config || !this.props.Type || !this.props.RoomId) {
       console.warn("Please check the props");
     }
@@ -156,6 +158,7 @@ class IrisRoomContainer extends Component {
 
         this.irisRtcStream.createStream(streamConfig).then(function(stream) {
           self.localStream = stream;
+
           // Create new session
           let config = self.props.Config;
           config.roomId = self.props.RoomId;
@@ -169,6 +172,7 @@ class IrisRoomContainer extends Component {
           }
         });
       } else if (this.props.Type === 'audio' || this.props.Type === 'pstn') {
+
         //Create Audio Stream
         var streamConfig = {
           "streamType": "audio",
@@ -178,6 +182,7 @@ class IrisRoomContainer extends Component {
 
         this.irisRtcStream.createStream(streamConfig).then(function(stream) {
           self.localStream = stream;
+
           // Create new session
           let config = self.props.Config;
           config.roomId = self.props.RoomId;
@@ -191,6 +196,7 @@ class IrisRoomContainer extends Component {
           }
         });
       } else if (this.props.Type === 'chat') {
+
         // Create a new chat session
         let config = this.props.Config;
         config.roomId = this.props.RoomId;
@@ -211,7 +217,7 @@ class IrisRoomContainer extends Component {
   // Called when there is a change in props
   componentWillReceiveProps(nextProps) {
 
-    console.log(" IrisRoomContainer::componentWillReceiveProps :: start :: nextProps "+JSON.stringify(nextProps));
+    console.log(" IrisRoomContainer::componentWillReceiveProps :: start :: nextProps " + JSON.stringify(nextProps));
 
     var self = this;
 
@@ -225,7 +231,7 @@ class IrisRoomContainer extends Component {
     config.type = nextProps.Type;
     config.irisToken = nextProps.Config.irisToken;
 
-    console.log("IrisRoomContainer :: componentWillReceiveProps :: config : "+JSON.stringify(config));
+    console.log("IrisRoomContainer :: componentWillReceiveProps :: config : " + JSON.stringify(config));
 
     if (this.props.RoomId && !nextProps.RoomId) {
 
@@ -241,15 +247,16 @@ class IrisRoomContainer extends Component {
       // and create new session with latest Type
       if (this.props.Type !== nextProps.Type) {
 
-        console.log("IrisRoomContainer :: Change in the session Type is detected "+this.props.Type + " --> " +nextProps.Type);
+        console.log("IrisRoomContainer :: Change in the session Type is detected " +
+        this.props.Type + " --> " +nextProps.Type);
 
         // Stop the media stream and end the session
         this._stopMediaStream();
 
         if (nextProps.Type === 'chat') {
 
-          console.log("IrisRoomContainer :: downgradeToChat "+JSON.stringify(config) +
-          " notify :: "+JSON.stringify(nextProps.NotificationPayload));
+          console.log("IrisRoomContainer :: downgradeToChat " + JSON.stringify(config) +
+          " notify :: " + JSON.stringify(nextProps.NotificationPayload));
 
           this.irisRtcSession.downgradeToChat(config, nextProps.NotificationPayload);
 
@@ -265,8 +272,8 @@ class IrisRoomContainer extends Component {
 
           this.irisRtcStream.createStream(streamConfig).then(function(stream) {
             self.localStream = stream;
-            console.log("IrisRoomContainer :: upgradeToVideo config :: "+JSON.stringify(config) +
-            " notify :: "+JSON.stringify(nextProps.NotificationPayload));
+            console.log("IrisRoomContainer :: upgradeToVideo config :: " + JSON.stringify(config) +
+            " notify :: " + JSON.stringify(nextProps.NotificationPayload));
             self.irisRtcSession.upgradeToVideo(stream, config, nextProps.NotificationPayload);
           });
 
@@ -289,7 +296,7 @@ class IrisRoomContainer extends Component {
       }
     } else if (this.props.RoomId !== nextProps.RoomId) {
 
-      console.log("IrisRoomContainer :: Change in RoomId detected "+this.props.RoomId + " --> " +nextProps.RoomId);
+      console.log("IrisRoomContainer :: Change in RoomId detected " + this.props.RoomId + " --> " + nextProps.RoomId);
 
       // If RoomId is changed end the old session and
       // create new session with latest RoomId from props
@@ -312,10 +319,10 @@ class IrisRoomContainer extends Component {
           self.localStream = stream;
 
           if(self.props.NotificationPayload){
-            console.log("IrisRoomContainer :: Joining video call with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
+            console.log("IrisRoomContainer :: Joining video call with RoomId " + nextProps.RoomId + " config : " + JSON.stringify(config) + " notification " + JSON.stringify(nextProps.NotificationPayload));
             self.irisRtcSession.joinSession(config, irisRtcConnection, stream, nextProps.NotificationPayload);
           }else{
-            console.log("IrisRoomContainer :: Making video call with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config));
+            console.log("IrisRoomContainer :: Making video call with RoomId " + nextProps.RoomId + " config : " + JSON.stringify(config));
             self.irisRtcSession.createSession(config, irisRtcConnection, stream);
           }
         });
@@ -323,7 +330,7 @@ class IrisRoomContainer extends Component {
 
       if(nextProps.Type === "audio" || nextProps.Type === "pstn"){
 
-        console.log("IrisRoomContainer :: Audio call with RoomId " +nextProps.RoomId);
+        console.log("IrisRoomContainer :: Audio call with RoomId " + nextProps.RoomId);
 
         var streamConfig = {
           "streamType": "audio",
@@ -337,10 +344,10 @@ class IrisRoomContainer extends Component {
 
           if(self.props.NotificationPayload){
             console.log("IrisRoomContainer :: Joining audio call with RoomId " +
-            nextProps.RoomId + " config : "+JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
+            nextProps.RoomId + " config : " + JSON.stringify(config) + " notification " + JSON.stringify(nextProps.NotificationPayload));
             self.irisRtcSession.joinSession(config, irisRtcConnection, stream, nextProps.NotificationPayload);
           }else{
-            console.log("IrisRoomContainer :: Making audio call with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config));
+            console.log("IrisRoomContainer :: Making audio call with RoomId " + nextProps.RoomId + " config : " + JSON.stringify(config));
             self.irisRtcSession.createSession(config, irisRtcConnection, stream);
           }
         });
@@ -349,19 +356,18 @@ class IrisRoomContainer extends Component {
       // Create new session with RoomId and Type
       if ((!this.props.Type || this.props.Type === 'chat') && nextProps.Type === 'chat') {
 
-        console.log("IrisRoomContainer :: groupchat with RoomId " +nextProps.RoomId);
+        console.log("IrisRoomContainer :: groupchat with RoomId " + nextProps.RoomId);
 
         this.createNewIrisSession();
 
         if(nextProps.NotificationPayload){
-          console.log("IrisRoomContainer :: Joining groupchat with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
+          console.log("IrisRoomContainer :: Joining groupchat with RoomId " + nextProps.RoomId + " config : " + JSON.stringify(config) + " notification "+JSON.stringify(nextProps.NotificationPayload));
           this.irisRtcSession.joinChatSession(config, irisRtcConnection, nextProps.NotificationPayload)
         }else{
-          console.log("IrisRoomContainer :: Making groupchat with RoomId " +nextProps.RoomId + " config : "+JSON.stringify(config));
+          console.log("IrisRoomContainer :: Making groupchat with RoomId " + nextProps.RoomId + " config : " + JSON.stringify(config));
           this.irisRtcSession.createChatSession(config, irisRtcConnection);
         }
       }
-
     }else if ((this.props.Type != nextProps.Type) || (this.props.RoomId != nextProps.RoomId)) {
       console.log("IrisRoomContainer :: Change in Type and RoomId" );
 
@@ -381,14 +387,14 @@ class IrisRoomContainer extends Component {
   _stopMediaStream(){
 
     if(this.irisRtcStream && this.localStream){
-      console.log(" IrisRoomContainer::_stopMediaStream :: "+this.localStream);
+      console.log(" IrisRoomContainer::_stopMediaStream :: " + this.localStream);
       this.irisRtcStream.stopMediaStream(this.localStream);
       this.localStream = null;
     }
   }
 
   stopMediaStream(){
-    console.log(" IrisRoomContainer::stopMediaStream :: "+this.localStream);
+    console.log(" IrisRoomContainer::stopMediaStream :: " + this.localStream);
     this._stopMediaStream();
   }
 
@@ -483,21 +489,21 @@ class IrisRoomContainer extends Component {
   }
 
   _onParticipantVideoMuted(roomId, id, muted) {
-    console.log("IrisRoomContainer :: _onParticipantVideoMuted " + id + " Muted "+muted);
+    console.log("IrisRoomContainer :: _onParticipantVideoMuted " + id + " Muted " + muted);
     if(this.props.onParticipantVideoMuted){
       this.props.onParticipantVideoMuted(roomId, id, muted);
     }
   }
 
   _onParticipantAudioMuted(roomId, id, muted) {
-    console.log("IrisRoomContainer :: _onParticipantAudioMuted " + id + " Muted "+muted);
+    console.log("IrisRoomContainer :: _onParticipantAudioMuted " + id + " Muted " + muted);
     if(this.props.onParticipantAudioMuted){
       this.props.onParticipantAudioMuted(roomId, id, muted);
     }
   }
 
   _onUserProfileChange(roomId, id, obj) {
-    console.log("IrisRoomContainer :: _onUserProfileChange " + id + " obj "+ JSON.stringify(obj));
+    console.log("IrisRoomContainer :: _onUserProfileChange " + id + " obj " + JSON.stringify(obj));
     if(this.props.onUserProfileChange){
       this.props.onUserProfileChange(roomId, id, obj);
     }
@@ -585,7 +591,7 @@ class IrisRoomContainer extends Component {
     if(screenShareConfig && !screenShareConfig.screenShare)
     screenShareConfig.screenShare = true;
 
-    console.log("IrisRoomContainer :: startScreenshare :: screenShareConfig "+JSON.stringify(screenShareConfig));
+    console.log("IrisRoomContainer :: startScreenshare :: screenShareConfig " + JSON.stringify(screenShareConfig));
 
     if(this.irisRtcSession && this.irisRtcStream){
       console.log('IrisRoomContainer :: startScreenshare :: Calling irisRtcSession.switchStream ');
@@ -604,7 +610,7 @@ class IrisRoomContainer extends Component {
       if(streamConfig){
         console.log("IrisRoomContainer :: endScreenshare :: set screenShare flag to false");
         streamConfig.screenShare = false;
-        console.log("IrisRoomContainer :: endScreenshare :: streamConfig : "+JSON.stringify(streamConfig));
+        console.log("IrisRoomContainer :: endScreenshare :: streamConfig : " + JSON.stringify(streamConfig));
 
         this.irisRtcSession.switchStream(this.props.RoomId, this.irisRtcStream, streamConfig);
       }else {
