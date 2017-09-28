@@ -78,97 +78,94 @@ this.setState({
 
 ## APIs
 
-<div>
-
-### Connection APIs - Make a connection using `connectUsingServer`
-
-**Example**
+**Connection APIs - Make a connection using `connect`**
+---
+* **Example**
 
 ```js
 import IrisRtcSdk from 'iris-react-sdk';
 IrisRtcSdk.connect(irisToken, routingId, serverUrl);
 ```
-**Params**
+* **Params**
 
-* `serverUrl` **{String}**: The url to event manager
-* `irisToken` **{String}**: A valid IRIS token
-* `routingId` **{String}**: Routing id of the user who is trying to login
-
-</div>
-----
+  * `serverUrl` **{String}**: The url to event manager
+  * `irisToken` **{String}**: A valid IRIS token
+  * `routingId` **{String}**: Routing id of the user who is trying to login
 
 
-### Connection APIs - Disconnect using `disconnect`
-
-**Example**
+**Connection APIs - Disconnect using `disconnect`**
+---
+* **Example**
 
 ```js
 import IrisRtcSdk from 'iris-react-sdk';
 IrisRtcSdk.disconnect();
 ```
-**Params**
+* **Params**
 
-* None
+  * None
 
-</div>
-----
 
-### Media devices - Get a list of meida devices with `getMediaDevices`
+**Media devices - Get a list of meida devices with `getMediaDevices`**
+---
 Returns a promise with list of available audio and video devies
 
-**Example**
+* **Example**
 
 ```js
 import IrisRtcSdk from 'iris-react-sdk';
 IrisRtcSdk.getMediaDevices();
 ```
-**Params**
+* **Params**
 
-* None
-
-</div>
-----
+  * None
 
 
-### Message APIs - send message using `sendChatMessage`
-
-**Example**
+**Message APIs - send message using `sendChatMessage`**
+---
+* **Example**
 
 ```js
 this.refs.room.sendChatMessage(roomId, id, message);
 ```
-**Params**
+* **Params**
 
-* `id` **{String}**: Unique UUID for the message
-* `message` **{String}**: Text message to be sent to participant
-
-</div>
-----
+  * `id` **{String}**: Unique UUID for the message
+  * `message` **{String}**: Text message to be sent to participant
 
 
+**Message APIs - send chat state using `sendChatState`**
+---
+* **Example**
 
-### Message APIs - get messages history `syncMessages`
+```js
+this.refs.room.sendChatState(roomId, chatState);
+```
+* **Params**
 
+  * `roomId` **{String}** : Room Id
+  * `chatState` **{String}**: Chat States like `active`, `composing`, `paused`, `inactive` and `gone`
+
+
+**Message APIs - get messages history `syncMessages`**
+---
 This returns a callback onEventHistory on IrisRoomContainer component.
 
-**Example**
+* **Example**
 
 ```js
 this.refs.room.syncMessages();
 ```
-**Params**
+* **Params**
 
-* None
-
-</div>
-----
+  * None
 
 
-### Screen Share API - Start screen share with `startScreenshare`
-
+**Screen Share API - Start screen share with `startScreenshare`**
+---
 This API starts sharing the screen. It should be called with `screenShareConfig`
 
-**Example**
+* **Example**
 
 ```js
 
@@ -193,19 +190,16 @@ var screenShareConfig = {
 this.refs.room.startScreenshare(screenShareConfig);
 
 ```
-**Params**
+* **Params**
 
-* `screenShareConfig` **{json}**: Stream config for screen share
-
-</div>
-----
+  * `screenShareConfig` **{json}**: Stream config for screen share
 
 
-### Screen Share API - End screen share  with `endScreenshare`
-
+**Screen Share API - End screen share  with `endScreenshare`**
+---
 This API ends sharing the screen. It should be called with `streamConfig` to get revert back to localStream
 
-**Example**
+* **Example**
 
 ```js
 
@@ -219,9 +213,107 @@ var streamConfig = {
 this.refs.room.endScreenshare(streamConfig);
 
 ```
-**Params**
+* **Params**
 
-* `streamConfig` **{json}**: Stream config to revert back from screen to local stream
+  * `streamConfig` **{json}**: Stream config to revert back from screen to local stream
 
-</div>
-----
+
+**PSTN APIs - Hold a PSTN call using `pstnHold`**
+---
+* **Example**
+
+```js
+this.refs.room.pstnHold(roomId, participantJid);
+```
+* **Params**
+
+  * `roomId` **{String}** : Room Id
+  * `participantJid` **{String}**: Remote participant routingId/resourceId
+
+
+**PSTN APIs - UnHold a PSTN call using `pstnUnHold`**
+---
+* **Example**
+
+```js
+this.refs.room.pstnUnHold(roomId, participantJid);
+```
+* **Params**
+
+  * `roomId` **{String}** : Room Id
+  * `participantJid` **{String}**: Remote participant routingId/resourceId
+
+
+**PSTN APIs - Merge two PSTN calls using `pstnMerge`**
+---
+* **Example**
+
+```js
+this.refs.room.pstnMerge(roomId, firstParticipantJid, secondParticipantJid);
+```
+* **Params**
+
+  * `roomId` **{String}** : Room Id
+  * `firstParticipantJid` **{String}**: First remote participant's routingId/resourceId
+  * `secondParticipantJid` **{String}**: Second remote participant's routingId/resourceId
+
+
+**PSTN APIs - End PSTN call using `pstnHangup`**
+---
+* **Example**
+
+```js
+this.refs.room.pstnHangup(roomId, participantJid);
+```
+* **Params**
+
+  * `roomId` **{String}** : Room Id
+  * `participantJid` **{String}**: Remote participant's routingId/resourceId
+
+
+<br/><br/>
+# Callbacks
+
+**Connection - For connection successful listen to  `onConnected`**
+---
+* **Example**
+
+```js
+IrisRtcSdk.onConnected = () => {
+  console.log("App :: onConnected :: Iris connection successful");
+}
+```
+
+* **Params**
+
+  * None
+
+
+**Connection - For Notification listen to  `onNotification`**
+---
+* **Example**
+
+```js
+IrisRtcSdk.onNotification = (notificationPayload) => {
+  console.log("App :: notificationPayload :: Iris notification received");
+}
+```
+
+* **Params**
+
+  * `notificationPayload` **{json}** : Notification payload with the information to join session
+
+
+**IrisRoomContainer - For local media stream `onLocalStream`**
+---
+* **Example**
+
+```js
+onLocalStream= (stream) => {
+  console.log("App :: onLocalStream :: Local media stream received");
+}
+```
+
+* **Params**
+
+  * `stream` **{object}** : Local media stream
