@@ -53,11 +53,13 @@ class App extends Component {
     this.onRemoteStream = this.onRemoteStream.bind(this);
     this.onChatMessage = this.onChatMessage.bind(this);
     this.onChatAck = this.onChatAck.bind(this);
+    this.onChatState = this.onChatState.bind(this);
     this.onTextChange = this.onTextChange.bind(this);
     this.sendChatMessage = this.sendChatMessage.bind(this);
     this.onChatMsgChange = this.onChatMsgChange.bind(this);
     this.onSessionParticipantLeft = this.onSessionParticipantLeft.bind(this);
     this.onSessionTypeChange = this.onSessionTypeChange.bind(this);
+    this.onSessionCreated = this.onSessionCreated.bind(this);
     this.onSessionJoined = this.onSessionJoined.bind(this);
     this.onSessionParticipantJoined = this.onSessionParticipantJoined.bind(this);
 
@@ -652,6 +654,10 @@ class App extends Component {
     console.log("Chat Message ACK Received ", JSON.stringify(ackPayload));
   }
 
+  onChatState(roomId, participantJid, chatState){
+    console.log("Chat State Received :: participant " + participantJid + " Chat State : " + chatState);
+  }
+
   render() {
 
     var msgchildren = [];
@@ -747,15 +753,17 @@ class App extends Component {
         Config={this.state.Config}
         NotificationPayload={this.state.NotificationPayload}
         onLocalStream={this.onLocalStream}
+        onSessionCreated={this.onSessionCreated}
+        onSessionJoined={this.onSessionJoined}
+        onSessionParticipantJoined={this.onSessionParticipantJoined}
+        onSessionConnected={this.onSessionConnected}
         onRemoteStream={this.onRemoteStream}
         onChatMessage={this.onChatMessage}
         onChatAck={this.onChatAck}
-        onJoined={this.onJoined}
+        onChatState={this.onChatState}
         onEventHistory={this.onEventHistory}
         onSessionParticipantLeft={this.onSessionParticipantLeft}
         onSessionTypeChange={this.onSessionTypeChange}
-        onSessionJoined={this.onSessionJoined}
-        onSessionParticipantJoined={this.onSessionParticipantJoined}
         />
 
       <div id='localStreamDiv' >

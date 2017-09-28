@@ -44,6 +44,7 @@ return (
   onRemoteStream={this.onRemoteStream}
   onChatMessage={this.onChatMessage}
   onChatAck={this.onChatAck}
+  onChatState={this.onChatState}
   onEventHistory={this.onEventHistory}
   onDominantSpeakerChanged={this.onDominantSpeakerChanged}
   onSessionEnd={this.onSessionEnd}

@@ -15,8 +15,11 @@ var IrisRtcSdk = {};
 var irisRtcConnection = null;
 
 if (IrisRtcConnection) {
+
   irisRtcConnection = new IrisRtcConnection();
+
   IrisRtcSdk.connect = function(token, routingId, evmUrl) {
+
     if (IrisRtcConnection) {
       irisRtcConnection.connect(token, routingId, evmUrl);
 
@@ -60,22 +63,22 @@ if(IrisRtcStream){
   IrisRtcSdk.getMediaDevices = IrisRtcStream.getMediaDevices;
 }
 
-/*
-** Create a room container
+/**
+* Create a room container
 */
 class IrisRoomContainer extends Component {
-  // Constructor
 
+  // Constructor
   constructor(props) {
     super(props);
 
     this.createNewIrisSession = this.createNewIrisSession.bind(this);
     this._endSession = this._endSession.bind(this);
-    this._stopMediaStream = this._stopMediaStream.bind(this);
     this.stopMediaStream = this.stopMediaStream.bind(this);
     this.syncMessages = this.syncMessages.bind(this);
 
     this.sendChatMessage = this.sendChatMessage.bind(this);
+    this.sendChatState = this.sendChatState.bind(this);
     this.endSession = this.endSession.bind(this);
     this.setDisplayName = this.setDisplayName.bind(this);
     this.audioMuteToggle = this.audioMuteToggle.bind(this);
@@ -123,6 +126,7 @@ class IrisRoomContainer extends Component {
     this.irisRtcSession.onSessionEnd = this._onSessionEnd.bind(this);
     this.irisRtcSession.onChatMessage = this._onChatMessage.bind(this);
     this.irisRtcSession.onChatAck = this._onChatAck.bind(this);
+    this.irisRtcSession.onChatState = this._onChatState.bind(this);
     this.irisRtcSession.onParticipantVideoMuted = this._onParticipantVideoMuted.bind(this);
     this.irisRtcSession.onParticipantAudioMuted = this._onParticipantAudioMuted.bind(this);
     this.irisRtcSession.onUserProfileChange = this._onUserProfileChange.bind(this);
@@ -251,7 +255,7 @@ class IrisRoomContainer extends Component {
         this.props.Type + " --> " +nextProps.Type);
 
         // Stop the media stream and end the session
-        this._stopMediaStream();
+        this.stopMediaStream();
 
         if (nextProps.Type === 'chat') {
 
@@ -384,18 +388,12 @@ class IrisRoomContainer extends Component {
     //
   }
 
-  _stopMediaStream(){
-
+  stopMediaStream(){
     if(this.irisRtcStream && this.localStream){
-      console.log(" IrisRoomContainer::_stopMediaStream :: " + this.localStream);
+      console.log(" IrisRoomContainer::stopMediaStream :: " + this.localStream);
       this.irisRtcStream.stopMediaStream(this.localStream);
       this.localStream = null;
     }
-  }
-
-  stopMediaStream(){
-    console.log(" IrisRoomContainer::stopMediaStream :: " + this.localStream);
-    this._stopMediaStream();
   }
 
   // Function end the session
@@ -488,6 +486,13 @@ class IrisRoomContainer extends Component {
     }
   }
 
+  _onChatState(roomId, participantJid, chatState){
+    console.log("IrisRoomContainer :: _onChatState :: roomId: " + roomId + " participantJid: "+participantJid + " chatState: " +chatState);
+    if (this.props.onChatState) {
+      this.props.onChatState(roomId, participantJid, chatState);
+    }
+  }
+
   _onParticipantVideoMuted(roomId, id, muted) {
     console.log("IrisRoomContainer :: _onParticipantVideoMuted " + id + " Muted " + muted);
     if(this.props.onParticipantVideoMuted){
@@ -539,8 +544,16 @@ class IrisRoomContainer extends Component {
 
   // Send chat messages
   sendChatMessage(roomId, id, message) {
-    if ((this.props.Type == 'chat' || this.props.Type == 'video') && this.props.RoomId != "") {
+    console.log("IrisRoomContainer :: sendChatMessage :: roomId : " + roomId + " message : " + message);
+    if (this.props.Type != 'pstn' && this.props.RoomId != "") {
       this.irisRtcSession.sendChatMessage(roomId, id, message);
+    }
+  }
+
+  sendChatState(roomId, chatState){
+    console.log("IrisRoomContainer :: sendChatState :: roomId : " + roomId + " chatState : " + chatState);
+    if (this.props.Type != 'pstn' && this.props.RoomId != "") {
+      this.irisRtcSession.sendChatState(roomId, chatState);
     }
   }
 
@@ -572,10 +585,38 @@ class IrisRoomContainer extends Component {
     }
   }
 
-  pstnHold(roomId, participantJid, value){
+  pstnHold(roomId, participantJid){
     console.log(" IrisRoomContainer :: pstnHold");
     if(this.irisRtcSession){
-      this.irisRtcSession.pstnHold(roomId, participantJid, value);
+      this.irisRtcSession.pstnHold(roomId, participantJid);
+    }
+  }
+
+  pstnUnHold(roomId, participantJid){
+    console.log(" IrisRoomContainer :: pstnUnHold");
+    if(this.irisRtcSession){
+      this.irisRtcSession.pstnUnHold(roomId, participantJid);
+    }
+  }
+
+  pstnHangup(roomId, participantJid){
+    console.log(" IrisRoomContainer :: pstnHangup");
+    if(this.irisRtcSession){
+      this.irisRtcSession.pstnHangup(roomId, participantJid);
+    }
+  }
+
+  pstnMerge(roomId, firstParticipantJid, secondParticipantJid){
+    console.log(" IrisRoomContainer :: pstnMerge");
+    if(this.irisRtcSession){
+      this.irisRtcSession.pstnMerge(roomId, firstParticipantJid, secondParticipantJid);
+    }
+  }
+
+  addPSTNParticipant(roomId, toTN, toRoutingId){
+    console.log(" IrisRoomContainer :: addPSTNParticipant");
+    if(this.irisRtcSession){
+      this.irisRtcSession.addPSTNParticipant(roomId, toTN, toRoutingId);
     }
   }
 
